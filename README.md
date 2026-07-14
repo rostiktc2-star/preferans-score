@@ -87,7 +87,7 @@ I Crediti derivanti dalla Multa a quattro giocatori sono frazioni ridotte, non n
 
 - **Recupero automatico:** riaprire l’app sullo stesso browser e dispositivo.
 - **Backup:** sezione **Dati → Esporta backup**; per ripristinare usare **Importa backup**.
-- **Cancellazione:** **Dati → Cancella e ricomincia**, con conferma. Cancellare i dati del sito dal browser produce lo stesso effetto.
+- **Fine partita:** usa **Menu → Termina partita** oppure **Dati → Termina e cambia giocatori**, con conferma. Si torna alla configurazione per inserire nuovi partecipanti; esporta prima un backup se vuoi conservare la sessione.
 - Gli aggiornamenti del service worker non cancellano la chiave locale.
 
 ## Dipendenze e licenze

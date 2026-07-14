@@ -90,3 +90,34 @@ button:disabled{opacity:.42;cursor:not-allowed}
 }
 
 @media(max-width:360px){.mobile-menu{padding-left:.7rem;padding-right:.7rem}.mobile-menu-grid{gap:.4rem}.mobile-menu-grid a{padding:.5rem;gap:.4rem}.route-partita .game-header h1{font-size:1.3rem}}
+
+/* La configurazione mobile resta dentro il viewport; scorre solo il pannello se la tastiera riduce lo spazio. */
+@media(max-width:620px){
+  .setup-page{height:100dvh;min-height:0;grid-template-rows:52px minmax(0,1fr);overflow:hidden}
+  .setup-hero{height:52px;min-height:0;padding:0 1rem;justify-content:center;border-bottom:1px solid var(--line)}
+  .setup-hero:after,.setup-hero .suit-row,.setup-hero .eyebrow,.setup-hero>p:last-child{display:none}
+  .setup-hero h1{max-width:none;margin:0;font-size:1.35rem;line-height:1}
+  .setup-panel{height:auto;min-height:0;justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:.65rem 1rem calc(.8rem + env(safe-area-inset-bottom))}
+  .setup-panel .step-kicker{font-size:.64rem}
+  .setup-panel h2{margin:.1rem 0 .65rem;font-size:1.35rem}
+  .setup-panel fieldset{margin-bottom:.65rem}
+  .setup-panel legend{margin-bottom:.35rem;font-size:.76rem}
+  .setup-panel .segmented button{min-height:40px;padding:.45rem}
+  .setup-panel .seat-preview{height:160px;margin:.35rem auto .65rem}
+  .setup-panel .seat{width:44%;font-size:.72rem}
+  .setup-panel .seat input{min-height:40px;margin-top:.2rem;padding:.45rem .55rem;font-size:.76rem}
+  .setup-panel .seat>span{width:20px;height:20px;left:-6px;top:-4px;font-size:.64rem}
+  .setup-panel .table-mark{font-size:1.4rem}
+  .setup-panel .form-grid{grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.65rem}
+  .setup-panel .form-grid label{margin:0;font-size:.68rem;line-height:1.2}
+  .setup-panel .form-grid input{min-height:40px;margin-top:.3rem;padding:.45rem .55rem}
+  .setup-rest-options .button-options{grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem}
+  .setup-rest-options .button-options button{min-width:0;min-height:42px;padding:.35rem .2rem;font-size:.64rem;overflow:hidden;text-overflow:ellipsis}
+  .setup-actions{align-items:center;flex-wrap:nowrap;margin-top:.8rem;padding-top:.6rem;border-top:1px solid var(--line)}
+  .setup-actions .setup-next{min-width:92px;margin-left:auto;padding:.55rem .85rem}
+  .setup-panel .review-table{margin-bottom:.7rem}
+  .setup-panel .review-table>div{padding:.58rem 0;font-size:.82rem}
+  .setup-panel>.error{margin:.4rem 0;font-size:.72rem}
+}
+
+@media(max-width:900px){.mobile-menu-actions .end-game-mobile{grid-column:1/-1}}
