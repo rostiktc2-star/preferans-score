@@ -13,6 +13,7 @@ Le regole sono state confrontate con il documento “Manuale Preferans - Soči 3
 - calcolo finale con frazioni esatte, euro bilanciati ai centesimi e pagamenti minimi;
 - backup JSON e riepilogo PDF, generati localmente;
 - manuale tecnico ricercabile e guida “Impara a giocare”;
+- menu iniziale con accesso diretto a partita, guida e manuale, più istruzioni di installazione su iPhone;
 - manifest, service worker, cache offline e aggiornamento PWA esplicito.
 
 ## Avvio locale
@@ -87,7 +88,7 @@ I Crediti derivanti dalla Multa a quattro giocatori sono frazioni ridotte, non n
 
 - **Recupero automatico:** riaprire l’app sullo stesso browser e dispositivo.
 - **Backup:** sezione **Dati → Esporta backup**; per ripristinare usare **Importa backup**.
-- **Fine partita:** usa **Menu → Termina partita** oppure **Dati → Termina e cambia giocatori**, con conferma. Si torna alla configurazione per inserire nuovi partecipanti; esporta prima un backup se vuoi conservare la sessione.
+- **Fine partita:** usa **Menu → Termina partita** oppure **Dati → Termina e cambia giocatori**, con conferma. Si torna al menu iniziale e da **Gioca** si possono inserire nuovi partecipanti; esporta prima un backup se vuoi conservare la sessione.
 - Gli aggiornamenti del service worker non cancellano la chiave locale.
 
 ## Dipendenze e licenze
