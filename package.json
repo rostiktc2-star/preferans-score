@@ -13,7 +13,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.2.8",
+    "@fontsource/pt-sans": "5.2.8",
+    "@fontsource/pt-serif": "5.2.8",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "react": "^19.1.0",

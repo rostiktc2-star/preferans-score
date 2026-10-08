@@ -215,3 +215,9 @@ button:disabled{opacity:.42;cursor:not-allowed}
 .welcome-primary-actions{grid-template-columns:1fr 1fr;gap:1rem}.welcome-primary-actions>a,.welcome-primary-actions>button{display:grid;grid-template-columns:48px 1fr auto;min-height:118px}.welcome-primary-actions strong{font-size:clamp(1.05rem,3vw,1.35rem)}
 .welcome-secondary-actions{display:flex;justify-content:center;gap:1.2rem;margin-top:1.2rem}.welcome-secondary-actions a{color:var(--cyan);font-size:.82rem;font-weight:700;text-decoration:none}.welcome-secondary-actions a:hover{text-decoration:underline}
 @media(max-width:620px){.welcome-primary-actions{grid-template-columns:1fr}.welcome-primary-actions>a,.welcome-primary-actions>button{min-height:92px}.welcome-secondary-actions{margin-top:.8rem}}
+
+/* Tipografia ispirata all'editoria cirillica, con titoli più leggeri. */
+:root{font-family:"PT Sans",ui-sans-serif,system-ui,sans-serif}
+button,input,select,textarea{font-family:"PT Sans",ui-sans-serif,system-ui,sans-serif}
+h1,h2,h3,h4,.setup-hero h1,.setup-panel h2,.game-header h1,.section-heading h2,.page-section>h2,.wizard>header h2,.american-overlay p,.manual-layout>aside h2,.manual-content>h1,.learn-page h1,.manual-content article h2,.learn-grid h2,.login-page h1,.bot-setup-page h1,.g-topbar>div strong,.g-player-badge strong,.g-human>header strong,.g-contract-chip strong,.g-decision-panel header strong,.g-discard-panel strong,.g-hand-summary h2,.g-sheet h2,.g-auction-confirm strong{font-family:"PT Serif",Georgia,serif!important;font-weight:400!important;letter-spacing:-.012em}
+.brand,.welcome-primary-actions strong{font-family:"PT Serif",Georgia,serif;font-weight:400}
