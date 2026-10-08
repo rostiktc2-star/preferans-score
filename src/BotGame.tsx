@@ -10,7 +10,7 @@ const RANK_LABEL: Record<Rank, string> = { [Rank.SEVEN]: '7', [Rank.EIGHT]: '8',
 const nameOf = (id?: string) => PLAYERS.find(player => player.id === id)?.name ?? '—'
 const suitLabel = (trump: Trump) => trump === 'NT' ? 'NT' : SUIT_SYMBOL[trump]
 const bidLabel = (bid: Bid) => bid.kind === ContractKind.MIZER ? 'Mizer' : `${bid.level}${suitLabel(bid.trump)}`
-const newEngine = () => { const game = new GameEngine({ players: PLAYERS, poolTarget: 10 }); game.startGame(); return game }
+const newEngine = (poolTarget: number) => { const game = new GameEngine({ players: PLAYERS, poolTarget }); game.startGame(); return game }
 const newBots = () => ({
   [BOT_LEFT]: new PreferansBot(BOT_LEFT, { skillLevel: SkillLevel.NORMAL, playStyle: PlayStyle.CONSERVATIVE, seed: `alex-${Date.now()}`, monteCarloSamples: 20, timeBudgetMs: 45 }),
   [BOT_RIGHT]: new PreferansBot(BOT_RIGHT, { skillLevel: SkillLevel.HARD, playStyle: PlayStyle.AGGRESSIVE, seed: `mikhail-${Date.now()}`, monteCarloSamples: 70, timeBudgetMs: 120 }),
@@ -100,9 +100,9 @@ function resultSummary(view: PlayerView): { title: string; lines: string[] } {
   return { title, lines }
 }
 
-export default function BotGame({ onBack }: { onBack: () => void }) {
+export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBack: () => void; poolTarget: number; onHandCompleted?: () => void }) {
   const engineRef = useRef<GameEngine | null>(null), presentationRef = useRef<GamePresentationController | null>(null), audioRef = useRef<AudioManager | null>(null), botsRef = useRef<Record<string, PreferansBot> | null>(null), advisorRef = useRef<AdvancedBotAdvisor | null>(null)
-  if (!engineRef.current) engineRef.current = newEngine()
+  if (!engineRef.current) engineRef.current = newEngine(poolTarget)
   if (!presentationRef.current) presentationRef.current = new GamePresentationController()
   if (!audioRef.current) audioRef.current = new AudioManager()
   if (!botsRef.current) botsRef.current = newBots()
@@ -113,6 +113,7 @@ export default function BotGame({ onBack }: { onBack: () => void }) {
   const [speed, setSpeed] = useState<GameSpeed>('normal'), [muted, setMuted] = useState(false), [autoSort, setAutoSort] = useState(true), [manualOrder, setManualOrder] = useState<string[]>([])
   const [advancedAi, setAdvancedAi] = useState(false), [advancedMode, setAdvancedMode] = useState(AdvancedAiMode.BALANCED)
   const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const recordedHands = useRef(new Set<number>())
   const engine = engineRef.current, presentation = presentationRef.current
   const view = engine.getPlayerView(HUMAN)
   const animation = presentation.queue.current, busy = presentation.queue.isBusy
@@ -122,6 +123,7 @@ export default function BotGame({ onBack }: { onBack: () => void }) {
   useEffect(() => { const media = matchMedia('(prefers-reduced-motion: reduce)'); const update = () => setReducedMotion(media.matches); media.addEventListener('change', update); return () => media.removeEventListener('change', update) }, [])
   useEffect(() => { audioRef.current!.setMuted(muted) }, [muted])
   useEffect(() => { advisorRef.current!.configure({ enabled: advancedAi, mode: advancedMode }) }, [advancedAi, advancedMode])
+  useEffect(() => { if (view.phase === GamePhase.HAND_COMPLETE && !recordedHands.current.has(view.handNumber)) { recordedHands.current.add(view.handNumber); onHandCompleted?.() } }, [onHandCompleted, view.handNumber, view.phase])
   const visibleHandKey = view.ownHand.map(card => card.id).join('|')
   useEffect(() => { const ids = visibleHandKey ? visibleHandKey.split('|') : []; setManualOrder(current => [...current.filter(id => ids.includes(id)), ...ids.filter(id => !current.includes(id))]) }, [visibleHandKey])
   useEffect(() => {
@@ -162,7 +164,7 @@ export default function BotGame({ onBack }: { onBack: () => void }) {
   const moveManual = (direction: -1 | 1) => { if (selected.length !== 1) return; const id = selected[0]!; setManualOrder(order => { const next = [...order], index = next.indexOf(id), target = Math.max(0, Math.min(next.length - 1, index + direction)); next.splice(index, 1); next.splice(target, 0, id); return next }) }
   const confirmDiscard = () => { if (selected.length !== 2 || busy) return; engine.discard(HUMAN, [selected[0]!, selected[1]!]); setSelected([]); setMessage(''); refresh() }
   const nextHand = () => { engine.nextHand(); setSelected([]); setMessage(''); refresh() }
-  const resetGame = () => { if (!confirm('Ricominciare la partita?')) return; engineRef.current = newEngine(); presentationRef.current = new GamePresentationController(); botsRef.current = newBots(); advisorRef.current = new AdvancedBotAdvisor({ enabled: advancedAi, mode: advancedMode, maxCallsPerHand: 4, maxCallsPerGame: 40, budgetLimitUsd: .25, timeoutMs: 4000 }); setSelected([]); setMessage(''); setRevision(value => value + 1); setAnimationRevision(value => value + 1) }
+  const resetGame = () => { if (!confirm('Ricominciare la partita?')) return; engineRef.current = newEngine(poolTarget); presentationRef.current = new GamePresentationController(); botsRef.current = newBots(); advisorRef.current = new AdvancedBotAdvisor({ enabled: advancedAi, mode: advancedMode, maxCallsPerHand: 4, maxCallsPerGame: 40, budgetLimitUsd: .25, timeoutMs: 4000 }); recordedHands.current.clear(); setSelected([]); setMessage(''); setRevision(value => value + 1); setAnimationRevision(value => value + 1) }
   const summary = resultSummary(view), contractText = view.contract ? view.contract.kind === ContractKind.MIZER ? 'Mizer' : `${view.contract.level}${suitLabel(view.contract.trump)}` : view.phase.toString().startsWith('RASPASY') ? `Raspasy ×${view.raspasyValue}` : 'Asta'
   const tableCards = view.currentTrick?.cards ?? (animation?.kind === 'CAPTURE_TRICK' ? view.completedTricks.at(-1)?.cards ?? [] : [])
   const animatedDiscards = animation?.kind === 'DISCARD_SEQUENCE' ? animation.event.data.cards as Card[] | undefined : undefined
@@ -171,6 +173,7 @@ export default function BotGame({ onBack }: { onBack: () => void }) {
     <header className="g-topbar"><button onClick={onBack}>← Menu</button><div><span>Preferans Soči</span><strong>Mano {view.handNumber}</strong></div><nav><button onClick={() => setTricksOpen(true)}>Prese</button><button onClick={() => setScoreOpen(true)}>Punteggio</button><button onClick={() => setSettingsOpen(value => !value)} aria-expanded={settingsOpen}>⚙</button></nav></header>
     {settingsOpen && <aside className="g-settings"><label>Velocità<select value={speed} onChange={event => setSpeed(event.target.value as GameSpeed)}><option value="slow">Lenta</option><option value="normal">Normale</option><option value="fast">Veloce</option></select></label><label className="g-ai-toggle"><input type="checkbox" checked={advancedAi} onChange={event => setAdvancedAi(event.target.checked)}/> AI avanzata {advancedAi ? 'attiva' : 'disattiva'}</label><label>Modalità AI<select value={advancedMode} disabled={!advancedAi} onChange={event => setAdvancedMode(event.target.value as AdvancedAiMode)}><option value={AdvancedAiMode.CONSERVATIVE}>Conservative</option><option value={AdvancedAiMode.BALANCED}>Balanced</option><option value={AdvancedAiMode.CREATIVE}>Creative</option></select></label>{advancedAi && <small className="g-ai-status">{advisorRef.current.stats.requests} richieste · ${advisorRef.current.stats.estimatedCostUsd.toFixed(4)} stimati</small>}<button onClick={() => setMuted(value => !value)}>{muted ? 'Audio spento' : 'Audio basso'}</button><button onClick={() => setAutoSort(value => !value)}>Ordine {autoSort ? 'automatico' : 'manuale'}</button><button onClick={() => { presentation.queue.skipCurrentAnimation(); setAnimationRevision(value => value + 1) }}>Salta movimento</button><button onClick={() => { presentation.queue.skipAllAnimations(); setAnimationRevision(value => value + 1) }}>Salta tutto</button><button className="g-danger" onClick={resetGame}>Ricomincia</button></aside>}
     <div className={`g-table ${animation ? `anim-${animation.kind.toLowerCase()}` : ''}`}>
+      <aside className="g-scoreboard-pinned" aria-label="Punteggio sempre visibile">{PLAYERS.map(player => <div key={player.id}><strong>{player.name}</strong><span>P {view.scoreboard.scores[player.id]!.pool}/{poolTarget}</span><span>M {view.scoreboard.scores[player.id]!.penalty}</span></div>)}</aside>
       <div className="g-deck" aria-label="Mazzo"><PlayingCard face="back" compact/><PlayingCard face="back" compact/></div>
       <Opponent id={BOT_LEFT} side="left" view={view} animation={animation}/><Opponent id={BOT_RIGHT} side="right" view={view} animation={animation}/>
       <section className="g-center" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); playHumanCard(event.dataTransfer.getData('text/card-id')) }}>
