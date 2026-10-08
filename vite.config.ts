@@ -1,10 +1,15 @@
 import { defineConfig } from 'vitest/config'
+import { loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { handleAdvisorHttp } from './server/openai-advisor.js'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const serverEnv = loadEnv(mode, '.', 'OPENAI_')
+  return {
   base: './',
   plugins: [
+    { name: 'preferans-advanced-ai-backend', configureServer(server) { server.middlewares.use('/api/advanced-ai', (request, response) => { void handleAdvisorHttp(request, response, serverEnv) }) } },
     react(),
     VitePWA({
       registerType: 'prompt',
@@ -33,4 +38,5 @@ export default defineConfig({
     })
   ],
   test: { environment: 'node', coverage: { reporter: ['text', 'html'] } }
+  }
 })

@@ -6,6 +6,7 @@ Le regole sono state confrontate con il documento “Manuale Preferans - Soči 3
 
 ## Funzioni principali
 
+- modalità giocabile per una persona contro Vera e Nikolaj, con mazzo da 32 carte, tallone, asta rapida, presa obbligata e punteggio Soči automatico;
 - wizard per contratto normale, mizer, raspasy e correzione manuale;
 - calcolo automatico di Pozzo, Multa, Crediti direzionali e aiuto americano;
 - riposo a rotazione nella modalità a quattro;
@@ -49,7 +50,22 @@ I test coprono contratti e difesa, polvist, mizer, raspasy, aiuto americano, rip
 2. In **Settings → Pages**, scegliere **GitHub Actions** come sorgente.
 3. Eseguire il workflow **Pubblica su GitHub Pages**, oppure fare push su `main`.
 
-Il workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) esegue test e build, poi pubblica `dist`. Non servono backend, segreti, API key o servizi esterni.
+Il workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) esegue test e build, poi pubblica `dist`. Il gioco e i bot algoritmici non richiedono backend, segreti o servizi esterni.
+
+## AI avanzata opzionale
+
+La modalità contro i bot può consultare facoltativamente OpenAI per le sole decisioni strategiche non forzate. Il `GameEngine` continua a validare ogni azione e il fallback algoritmico mantiene la partita funzionante quando il servizio è disattivato, non configurato, lento o indisponibile.
+
+La chiave rimane esclusivamente nel backend. Copiare `.env.example` in `.env.local` e configurare almeno:
+
+```text
+OPENAI_API_KEY=...
+OPENAI_MODEL=...
+```
+
+Non usare mai variabili con prefisso `VITE_` per la chiave. In sviluppo, `pnpm dev` espone localmente `/api/advanced-ai`; su Vercel lo stesso endpoint è implementato da `api/advanced-ai.js`. Modello, timeout e tariffe per la stima dei costi sono configurabili tramite le altre variabili documentate in `.env.example`.
+
+L’utente può attivare l’opzione nelle impostazioni del tavolo e scegliere `Conservative`, `Balanced` o `Creative`. Sono applicati timeout, cache, limite chiamate per mano/partita e budget stimato. Il backend riceve solo il contesto pubblico filtrato, mai lo stato interno della partita.
 
 ## Architettura
 
@@ -61,6 +77,9 @@ Il workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) esegu
 - `src/services/pdf.ts`: PDF nel browser;
 - `src/content/manual.ts`: contenuti del manuale e della guida;
 - `src/App.tsx`: flussi UI e gestione della partita.
+- `src/ai/advanced`: contesto pubblico, gating, cache, validazione, arbiter e self-play A/B;
+- `server/openai-advisor.js`: chiamata OpenAI server-side con Structured Outputs;
+- `api/advanced-ai.js`: endpoint serverless per il deploy.
 
 La configurazione e la sequenza di eventi immutabili sono la fonte dei dati. Pozzo, Multa, Crediti, livello raspasy, rotazione e chiusura vengono sempre ricostruiti dall’inizio. Una modifica storica non altera quindi “a mano” i totali successivi.
 
