@@ -8,10 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@fontsource/cormorant-garamond':
-        specifier: 5.2.8
-        version: 5.2.8
-      '@fontsource/pt-sans':
+      '@fontsource/montserrat':
         specifier: 5.2.8
         version: 5.2.8
       jspdf:
@@ -785,11 +782,8 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@fontsource/cormorant-garamond@5.2.8':
-    resolution: {integrity: sha512-ylx8F6QQ0cyhS/fyeAqv3SlZNr+y3Cvt/AOd1e2hVA62Eg86vPqjugN7l5rsh6pnjbwHRaPNZWh98hyT7sasAQ==}
-
-  '@fontsource/pt-sans@5.2.8':
-    resolution: {integrity: sha512-b8nBGHMVwfe21IWqERlMrzIs+L/Vm3QNGbnET3H1vfclAScWExbN17N/z/dJcyPgvrcenbJDv1H3f5hTAEbcVQ==}
+  '@fontsource/montserrat@5.2.8':
+    resolution: {integrity: sha512-xTjLxSbSfCycDB0pwmNsfNvdfWPaDaRQ2LC6yt/ZI7SdvXG52zHnzNYC/09mzuAuWNJyShkteutfCoDgym56hQ==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -3362,9 +3356,7 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@fontsource/cormorant-garamond@5.2.8': {}
-
-  '@fontsource/pt-sans@5.2.8': {}
+  '@fontsource/montserrat@5.2.8': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

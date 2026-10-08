@@ -180,9 +180,9 @@ button:disabled{opacity:.42;cursor:not-allowed}
   .g-auction-confirm strong{font-size:1rem}
 }
 @media(max-width:390px){.g-human-hand>div{flex-basis:54px;width:54px;transform:none}.g-auction-picker{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 86px}.g-wheel button{flex-basis:35px}}
-.g-scoreboard-pinned{position:absolute;z-index:18;left:50%;top:10px;display:flex;transform:translateX(-50%);overflow:hidden;border:1px solid #ffffff24;border-radius:12px;background:#062928df;box-shadow:0 8px 24px #0018;backdrop-filter:blur(10px)}
-.g-scoreboard-pinned>div{display:grid;grid-template-columns:1fr auto auto;gap:.35rem;min-width:125px;padding:.35rem .5rem}.g-scoreboard-pinned>div+div{border-left:1px solid #ffffff18}.g-scoreboard-pinned strong{font-size:.58rem}.g-scoreboard-pinned span{color:#b9d7cf;font-size:.54rem}
-@media(max-width:760px){.g-scoreboard-pinned{top:68px;max-width:96%}.g-scoreboard-pinned>div{display:flex;flex-direction:column;gap:0;min-width:76px;padding:.25rem .4rem;text-align:center}.g-scoreboard-pinned strong{font-size:.52rem}.g-scoreboard-pinned span{font-size:.48rem}}
+.g-scoreboard-pinned{position:absolute;z-index:18;left:50%;top:10px;display:flex;transform:translateX(-50%);overflow:hidden;border:1px solid #ffffff24;border-radius:14px;background:#062928ed;box-shadow:0 8px 24px #0018;backdrop-filter:blur(10px)}
+.g-scoreboard-pinned>header,.g-recent-tricks{display:none}.g-score-players{display:flex}.g-score-players>article{min-width:132px;padding:.42rem .55rem}.g-score-players>article+article{border-left:1px solid #ffffff18}.g-score-players>article>strong{display:block;margin-bottom:.25rem;font-size:.7rem}.g-score-main{display:flex;gap:.55rem}.g-score-main span,.g-score-credits span{color:#b9d7cf;font-size:.62rem}.g-score-main b,.g-score-credits b{color:#fff}.g-score-credits{display:none}
+@media(max-width:760px){.g-scoreboard-pinned{top:61px;max-width:96%}.g-score-players>article{min-width:82px;padding:.3rem .4rem;text-align:center}.g-score-players>article>strong{font-size:.62rem}.g-score-main{flex-direction:column;gap:0}.g-score-main span{font-size:.56rem}}
 .g-card.is-dealing{animation-delay:calc(var(--deal-index,0) * 35ms)}.g-card.is-captured{animation:g-capture .68s cubic-bezier(.3,.1,.2,1) both}.g-discard-ghost{position:absolute;right:15%;bottom:3%;z-index:8;display:flex}.g-discard-ghost>.g-card+ .g-card{margin-left:-25px}
 @keyframes g-capture{0%{opacity:1;transform:scale(1)}55%{opacity:1;transform:scale(.72) translateY(-8px)}100%{opacity:0;transform:scale(.35) translateY(-55px)}}
 
@@ -216,23 +216,46 @@ button:disabled{opacity:.42;cursor:not-allowed}
 .welcome-secondary-actions{display:flex;justify-content:center;gap:1.2rem;margin-top:1.2rem}.welcome-secondary-actions a{color:var(--cyan);font-size:.82rem;font-weight:700;text-decoration:none}.welcome-secondary-actions a:hover{text-decoration:underline}
 @media(max-width:620px){.welcome-primary-actions{grid-template-columns:1fr}.welcome-primary-actions>a,.welcome-primary-actions>button{min-height:92px}.welcome-secondary-actions{margin-top:.8rem}}
 
-/* Tipografia ispirata all'editoria cirillica, con titoli più leggeri. */
-:root{font-family:"Cormorant Garamond",Georgia,serif;font-size:17px}
-button,input,select,textarea{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500}
-h1,h2,h3,h4,.setup-hero h1,.setup-panel h2,.game-header h1,.section-heading h2,.page-section>h2,.wizard>header h2,.american-overlay p,.manual-layout>aside h2,.manual-content>h1,.learn-page h1,.manual-content article h2,.learn-grid h2,.login-page h1,.bot-setup-page h1,.g-topbar>div strong,.g-player-badge strong,.g-human>header strong,.g-contract-chip strong,.g-decision-panel header strong,.g-discard-panel strong,.g-hand-summary h2,.g-sheet h2,.g-auction-confirm strong{font-family:"Cormorant Garamond",Georgia,serif!important;font-weight:500!important;letter-spacing:.005em}
-.brand,.welcome-primary-actions strong{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500}
+/* Font del progetto: Nizhegorodsky per titoli, Montserrat per la lettura. */
+@font-face{font-family:"ST Nizhegorodsky";src:url("./assets/fonts/ST-Nizhegorodsky.otf") format("opentype");font-style:normal;font-weight:400;font-display:swap}
+:root{font-family:"Montserrat",ui-sans-serif,system-ui,sans-serif;font-size:16px}
+body,button,input,select,textarea{font-family:"Montserrat",ui-sans-serif,system-ui,sans-serif;font-weight:500}
+h1,h2,h3,h4,.setup-hero h1,.setup-panel h2,.game-header h1,.section-heading h2,.page-section>h2,.wizard>header h2,.american-overlay p,.manual-layout>aside h2,.manual-content>h1,.learn-page h1,.manual-content article h2,.learn-grid h2,.login-page h1,.bot-setup-page h1,.g-topbar>div strong,.g-player-badge strong,.g-human>header strong,.g-contract-chip strong,.g-decision-panel header strong,.g-discard-panel strong,.g-hand-summary h2,.g-sheet h2,.g-auction-confirm strong,.g-scoreboard-pinned>header strong,.g-recent-tricks h3{font-family:"ST Nizhegorodsky",Georgia,serif!important;font-weight:400!important;letter-spacing:.01em}
+.brand,.welcome-primary-actions strong{font-family:"ST Nizhegorodsky",Georgia,serif;font-weight:400}
 .welcome-page>header h1,.login-page h1,.bot-setup-page h1{font-size:clamp(1.85rem,4.5vw,3rem)!important;line-height:1.05}
 
 /* Il dichiarante è riconoscibile a colpo d'occhio. */
 .g-opponent.is-declarer .g-player-badge,.g-human.is-declarer>header{border-color:#67a9ff;box-shadow:0 8px 0 -3px #2186ff,0 0 28px #2186ff88;background:#082f47e8}
 .g-opponent.is-declarer:after,.g-human.is-declarer:after{content:"";position:absolute;left:20%;right:20%;bottom:-8px;height:16px;border-radius:50%;background:#168cff;filter:blur(13px);opacity:.72;pointer-events:none}
 
+/* Comandi essenziali della partita. */
+.g-topbar>nav{justify-self:end}.g-topbar .g-menu-button,.g-topbar .g-settings-button{display:grid;place-items:center;width:38px;height:38px;min-height:38px;padding:0;border-radius:10px}
+.g-menu-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.g-settings-button{font-size:1rem}
+@media(max-width:760px){.g-topbar .g-menu-button,.g-topbar .g-settings-button{width:34px;height:34px;min-height:34px;border-radius:9px}.g-settings{right:.45rem}}
+
 /* Desktop: tavolo più raccolto e tabellone fisso nella colonna destra. */
 @media(min-width:900px){
-  .game-table-page{padding-right:250px;background:#071516}
+  .game-table-page{padding-right:290px;background:#071516}
   .g-table{width:100%;border-radius:0 28px 28px 0}
-  .g-topbar{margin-right:-250px;padding-right:270px}
-  .g-scoreboard-pinned{position:fixed;left:auto;right:18px;top:86px;width:214px;transform:none;flex-direction:column}
-  .g-scoreboard-pinned>div{min-width:0;width:100%;padding:.65rem .7rem}
-  .g-scoreboard-pinned>div+div{border-top:1px solid #ffffff18;border-left:0}
+  .g-topbar{margin-right:-290px;padding-right:18px}
+  .g-scoreboard-pinned{position:fixed;left:auto;right:18px;top:74px;bottom:18px;width:254px;transform:none;display:block;overflow:auto}
+  .g-scoreboard-pinned>header{display:flex;align-items:baseline;justify-content:space-between;padding:.8rem .85rem;border-bottom:1px solid #ffffff18}
+  .g-scoreboard-pinned>header span{color:#8db9ae;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase}
+  .g-scoreboard-pinned>header strong{font-size:1.15rem}
+  .g-score-players{display:block}
+  .g-score-players>article{min-width:0;padding:.72rem .85rem}
+  .g-score-players>article+article{border-top:1px solid #ffffff18;border-left:0}
+  .g-score-players>article>strong{font-size:.82rem}
+  .g-score-main{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+  .g-score-main span{display:flex;justify-content:space-between;padding:.28rem .38rem;border-radius:7px;background:#ffffff0a;font-size:.68rem}
+  .g-score-credits{display:grid;grid-template-columns:1fr 1fr;gap:.22rem .4rem;margin-top:.42rem}
+  .g-score-credits small{grid-column:1/-1;color:#8db9ae;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase}
+  .g-score-credits span{display:flex;justify-content:space-between;font-size:.65rem}
+  .g-recent-tricks{display:block;padding:.72rem .85rem;border-top:1px solid #ffffff18}
+  .g-recent-tricks h3{margin:0 0 .5rem;font-size:1rem}
+  .g-recent-tricks p{margin:.3rem 0;color:#8db9ae;font-size:.68rem}
+  .g-recent-tricks>div{display:grid;grid-template-columns:auto 1fr;gap:.12rem .45rem;padding:.42rem 0;border-top:1px solid #ffffff10}
+  .g-recent-tricks>div>span{color:#8db9ae;font-size:.63rem}.g-recent-tricks>div>strong{font-size:.7rem}
+  .g-recent-tricks>div>small{grid-column:1/-1;color:#c9ddd7;font-size:.62rem;line-height:1.35}
 }

@@ -85,11 +85,17 @@ function DefenderPanel({ view, onDecision }: { view: PlayerView; onDecision: (de
   return <section className="g-decision-panel" aria-label="Decisione difensiva"><header><span>Difesa</span><strong>Come rispondi?</strong></header><div className="g-defender-actions">{view.legalDefenderDecisions.map(decision => <button key={decision} onClick={() => onDecision(decision)}>{decision === DefenderDecision.PASS ? 'Pass' : decision === DefenderDecision.VIST ? 'Vist' : 'Polvist'}</button>)}</div></section>
 }
 
-function ScoreDrawer({ view, onClose }: { view: PlayerView; onClose: () => void }) {
-  return <div className="g-sheet-backdrop" onClick={onClose}><section className="g-sheet" role="dialog" aria-modal="true" aria-label="Punteggio" onClick={event => event.stopPropagation()}><header><div><span>Punteggio</span><h2>Situazione partita</h2></div><button onClick={onClose} aria-label="Chiudi punteggio">×</button></header>{PLAYERS.map(player => <article key={player.id}><strong>{player.name}</strong><span>Pozzo <b>{view.scoreboard.scores[player.id]!.pool}/10</b></span><span>Multa <b>{view.scoreboard.scores[player.id]!.penalty}</b></span><div>{PLAYERS.filter(other => other.id !== player.id).map(other => <small key={other.id}>contro {other.name}: <b>{view.scoreboard.credits[player.id]![other.id]}</b></small>)}</div></article>)}</section></div>
-}
-function TricksDrawer({ view, onClose }: { view: PlayerView; onClose: () => void }) {
-  return <div className="g-sheet-backdrop" onClick={onClose}><section className="g-sheet g-tricks-sheet" role="dialog" aria-modal="true" aria-label="Cronologia prese" onClick={event => event.stopPropagation()}><header><div><span>Memoria del tavolo</span><h2>Prese giocate</h2></div><button onClick={onClose} aria-label="Chiudi prese">×</button></header>{view.completedTricks.length === 0 ? <p>Nessuna presa completata.</p> : view.completedTricks.map(trick => <article key={trick.number}><strong>Presa {trick.number} · {nameOf(trick.winnerId)}</strong><div>{trick.cards.map(play => <PlayingCard key={play.card.id} card={play.card} compact />)}</div></article>)}</section></div>
+function PinnedScoreboard({ view, poolTarget }: { view: PlayerView; poolTarget: number }) {
+  const recentTricks = view.completedTricks.slice(-3).reverse()
+  return <aside className="g-scoreboard-pinned" aria-label="Punteggio e ultime prese sempre visibili">
+    <header><span>Partita</span><strong>Punteggio</strong></header>
+    <div className="g-score-players">{PLAYERS.map(player => <article key={player.id}>
+      <strong>{player.name}</strong>
+      <div className="g-score-main"><span>Pozzo <b>{view.scoreboard.scores[player.id]!.pool}/{poolTarget}</b></span><span>Multa <b>{view.scoreboard.scores[player.id]!.penalty}</b></span></div>
+      <div className="g-score-credits"><small>Crediti</small>{PLAYERS.filter(other => other.id !== player.id).map(other => <span key={other.id}>vs {other.name} <b>{view.scoreboard.credits[player.id]![other.id]}</b></span>)}</div>
+    </article>)}</div>
+    <section className="g-recent-tricks"><h3>Ultime prese</h3>{recentTricks.length === 0 ? <p>Nessuna presa giocata</p> : recentTricks.map(trick => <div key={trick.number}><span>№ {trick.number}</span><strong>{nameOf(trick.winnerId)}</strong><small>{trick.cards.map(play => `${RANK_LABEL[play.card.rank]}${SUIT_SYMBOL[play.card.suit]}`).join(' · ')}</small></div>)}</section>
+  </aside>
 }
 function resultSummary(view: PlayerView): { title: string; lines: string[] } {
   const scoreEvent = [...view.events].reverse().find(event => event.type === 'SCORE_UPDATED')
@@ -109,7 +115,7 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
   if (!advisorRef.current) advisorRef.current = new AdvancedBotAdvisor({ enabled: false, mode: AdvancedAiMode.BALANCED, maxCallsPerHand: 4, maxCallsPerGame: 40, budgetLimitUsd: .25, timeoutMs: 4000 })
   const [revision, setRevision] = useState(0), [animationRevision, setAnimationRevision] = useState(0)
   const [selected, setSelected] = useState<string[]>([]), [message, setMessage] = useState('')
-  const [scoreOpen, setScoreOpen] = useState(false), [tricksOpen, setTricksOpen] = useState(false), [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [speed, setSpeed] = useState<GameSpeed>('normal'), [muted, setMuted] = useState(false), [autoSort, setAutoSort] = useState(true), [manualOrder, setManualOrder] = useState<string[]>([])
   const [advancedAi, setAdvancedAi] = useState(false), [advancedMode, setAdvancedMode] = useState(AdvancedAiMode.BALANCED)
   const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
@@ -170,10 +176,10 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
   const animatedDiscards = animation?.kind === 'DISCARD_SEQUENCE' ? animation.event.data.cards as Card[] | undefined : undefined
 
   return <section className={`game-table-page speed-${speed} ${reducedMotion ? 'reduced-motion' : ''}`} data-phase={view.phase}>
-    <header className="g-topbar"><button onClick={onBack}>← Menu</button><div><span>Preferans Soči</span><strong>Mano {view.handNumber}</strong></div><nav><button onClick={() => setTricksOpen(true)}>Prese</button><button onClick={() => setScoreOpen(true)}>Punteggio</button><button onClick={() => setSettingsOpen(value => !value)} aria-expanded={settingsOpen}>⚙</button></nav></header>
+    <header className="g-topbar"><button className="g-menu-button" onClick={onBack} aria-label="Torna al menu" title="Torna al menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h11v18H4zM15 12h5M18 9l3 3-3 3M7 12h.01"/></svg></button><div><span>Preferans Soči</span><strong>Mano {view.handNumber}</strong></div><nav><button className="g-settings-button" onClick={() => setSettingsOpen(value => !value)} aria-label="Impostazioni" aria-expanded={settingsOpen}>⚙</button></nav></header>
     {settingsOpen && <aside className="g-settings"><label>Velocità<select value={speed} onChange={event => setSpeed(event.target.value as GameSpeed)}><option value="slow">Lenta</option><option value="normal">Normale</option><option value="fast">Veloce</option></select></label><label className="g-ai-toggle"><input type="checkbox" checked={advancedAi} onChange={event => setAdvancedAi(event.target.checked)}/> AI avanzata {advancedAi ? 'attiva' : 'disattiva'}</label><label>Modalità AI<select value={advancedMode} disabled={!advancedAi} onChange={event => setAdvancedMode(event.target.value as AdvancedAiMode)}><option value={AdvancedAiMode.CONSERVATIVE}>Conservative</option><option value={AdvancedAiMode.BALANCED}>Balanced</option><option value={AdvancedAiMode.CREATIVE}>Creative</option></select></label>{advancedAi && <small className="g-ai-status">{advisorRef.current.stats.requests} richieste · ${advisorRef.current.stats.estimatedCostUsd.toFixed(4)} stimati</small>}<button onClick={() => setMuted(value => !value)}>{muted ? 'Audio spento' : 'Audio basso'}</button><button onClick={() => setAutoSort(value => !value)}>Ordine {autoSort ? 'automatico' : 'manuale'}</button><button onClick={() => { presentation.queue.skipCurrentAnimation(); setAnimationRevision(value => value + 1) }}>Salta movimento</button><button onClick={() => { presentation.queue.skipAllAnimations(); setAnimationRevision(value => value + 1) }}>Salta tutto</button><button className="g-danger" onClick={resetGame}>Ricomincia</button></aside>}
     <div className={`g-table ${animation ? `anim-${animation.kind.toLowerCase()}` : ''}`}>
-      <aside className="g-scoreboard-pinned" aria-label="Punteggio sempre visibile">{PLAYERS.map(player => <div key={player.id}><strong>{player.name}</strong><span>P {view.scoreboard.scores[player.id]!.pool}/{poolTarget}</span><span>M {view.scoreboard.scores[player.id]!.penalty}</span></div>)}</aside>
+      <PinnedScoreboard view={view} poolTarget={poolTarget}/>
       <div className="g-deck" aria-label="Mazzo"><PlayingCard face="back" compact/><PlayingCard face="back" compact/></div>
       <Opponent id={BOT_LEFT} side="left" view={view} animation={animation}/><Opponent id={BOT_RIGHT} side="right" view={view} animation={animation}/>
       <section className="g-center" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); playHumanCard(event.dataTransfer.getData('text/card-id')) }}>
@@ -190,6 +196,6 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
       {message && <div className="g-toast" role="status">{message}</div>}{busy && <button className="g-skip" onClick={() => { presentation.queue.skipAllAnimations(); setAnimationRevision(value => value + 1) }}>Salta animazioni</button>}
       {[GamePhase.HAND_COMPLETE, GamePhase.GAME_COMPLETE].includes(view.phase) && <section className="g-hand-summary" role="dialog" aria-label="Riepilogo mano"><span>Mano conclusa</span><h2>{summary.title}</h2>{summary.lines.map(line => <p key={line}>{line}</p>)}{view.phase === GamePhase.HAND_COMPLETE ? <button onClick={nextHand}>Mano successiva →</button> : <button onClick={resetGame}>Nuova partita</button>}</section>}
     </div>
-    {scoreOpen && <ScoreDrawer view={view} onClose={() => setScoreOpen(false)}/>} {tricksOpen && <TricksDrawer view={view} onClose={() => setTricksOpen(false)}/>}<div className="g-debug" hidden={import.meta.env.PROD}><b>DEBUG</b> {view.phase} · {view.currentPlayerId ?? '—'} · legal {view.legalMoves.length} · queue {presentation.queue.snapshot().length}</div>
+    <div className="g-debug" hidden={import.meta.env.PROD}><b>DEBUG</b> {view.phase} · {view.currentPlayerId ?? '—'} · legal {view.legalMoves.length} · queue {presentation.queue.snapshot().length}</div>
   </section>
 }
