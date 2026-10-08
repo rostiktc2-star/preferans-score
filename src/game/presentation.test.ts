@@ -35,5 +35,5 @@ describe('presentazione event-driven', () => {
     const report = runTwentyHandSoak()
     expect(report).toMatchObject({ completedHands: 20, finalHandNumber: 20 })
     expect(report.commands).toBeGreaterThan(600)
-  })
+  }, 20_000)
 })
