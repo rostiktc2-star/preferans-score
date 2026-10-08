@@ -41,6 +41,7 @@ export class GameEngine {
   #talon: Card[] = []
   #revealedTalon: Card[] = []
   #discards: Card[] = []
+  #discardOwnerId?: PlayerId
   #auction: AuctionRecord[] = []
   #passed = new Set<PlayerId>()
   #highestBid?: Bid
@@ -195,21 +196,25 @@ export class GameEngine {
 
   revealTalon(): readonly Card[] {
     this.#requirePhase(GamePhase.TALON_REVEAL)
+    const recipientId = this.#completedTricks[0]?.winnerId
+    if (!recipientId) throw new RuleViolation('Il vincitore della prima presa non è disponibile')
     this.#revealedTalon = [...this.#talon]
-    this.#hands[this.#contract!.declarerId]!.add(this.#talon)
-    this.#events.append('TALON_REVEALED', this.#handNumber, { cards: clone(this.#talon) })
+    this.#hands[recipientId]!.add(this.#talon)
+    this.#events.append('TALON_REVEALED', this.#handNumber, { cards: clone(this.#talon), recipientId })
     this.#phase = GamePhase.DECLARER_DISCARD
-    this.#currentPlayerId = this.#contract!.declarerId
+    this.#currentPlayerId = recipientId
     return clone(this.#revealedTalon)
   }
 
   discard(playerId: PlayerId, cardIds: readonly [string, string]): void {
     this.#requirePhase(GamePhase.DECLARER_DISCARD)
-    if (playerId !== this.#contract!.declarerId) throw new RuleViolation('Solo il dichiarante può scartare')
+    const recipientId = this.#completedTricks[0]?.winnerId
+    if (playerId !== recipientId) throw new RuleViolation('Solo il vincitore della prima presa può scartare')
     if (cardIds[0] === cardIds[1]) throw new RuleViolation('Occorrono due carte distinte')
     const cards = cardIds.map(id => this.#hands[playerId]!.find(id))
     if (cards.some(card => !card)) throw new RuleViolation('Si possono scartare solo carte possedute')
     this.#discards = cards as Card[]
+    this.#discardOwnerId = playerId
     this.#hands[playerId]!.removeMany(cardIds)
     this.#events.append('CARDS_DISCARDED', this.#handNumber, { playerId, count: 2 }, { [playerId]: { cards: clone(this.#discards) } })
     const leaderId = this.#completedTricks[0]!.winnerId!
@@ -284,7 +289,7 @@ export class GameEngine {
       currentTrick: this.#currentTrick ? clone(this.#currentTrick) : undefined,
       completedTricks: clone(this.#completedTricks),
       revealedTalon: clone(this.#revealedTalon),
-      ownDiscards: playerId === this.#contract?.declarerId ? clone(this.#discards) : [],
+      ownDiscards: playerId === this.#discardOwnerId ? clone(this.#discards) : [],
       tricksWon: clone(this.#tricksWon),
       scoreboard: clone(this.#scoreboard),
       raspasyStreak: this.#raspasyStreak,
@@ -307,6 +312,7 @@ export class GameEngine {
     this.#talon = []
     this.#revealedTalon = []
     this.#discards = []
+    this.#discardOwnerId = undefined
     this.#auction = []
     this.#passed = new Set()
     this.#highestBid = undefined

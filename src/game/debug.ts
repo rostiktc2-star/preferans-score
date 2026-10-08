@@ -30,8 +30,9 @@ export function runHeadlessDemo(seed: number | string = 1): HeadlessHandReport {
     } else if (game.phase === GamePhase.TRICK_COMPLETE) game.resolveTrick()
     else if (game.phase === GamePhase.TALON_REVEAL) game.revealTalon()
     else if (game.phase === GamePhase.DECLARER_DISCARD) {
-      const hand = game.getPlayerView('player-1').ownHand
-      game.discard('player-1', [hand[0]!.id, hand[1]!.id])
+      const recipient = game.getPlayerView('player-1').currentPlayerId!
+      const hand = game.getPlayerView(recipient).ownHand
+      game.discard(recipient, [hand[0]!.id, hand[1]!.id])
     } else if (game.phase === GamePhase.RASPASY_TALON_REVEAL) game.revealNextRaspasyTalonCard()
     else if (game.phase === GamePhase.SCORING) game.scoreHand()
     else throw new Error(`Stato headless inatteso: ${game.phase}`)

@@ -4,8 +4,9 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import '@fontsource/pt-sans/400.css'
 import '@fontsource/pt-sans/700.css'
-import '@fontsource/pt-serif/400.css'
-import '@fontsource/pt-serif/700.css'
+import '@fontsource/cormorant-garamond/400.css'
+import '@fontsource/cormorant-garamond/500.css'
+import '@fontsource/cormorant-garamond/600.css'
 import './styles.css'
 
 const updateSW = registerSW({ onNeedRefresh() { window.dispatchEvent(new CustomEvent('pwa-update')) } })

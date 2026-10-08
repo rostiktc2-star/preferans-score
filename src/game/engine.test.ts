@@ -47,9 +47,9 @@ function finishPlayedHand(game: GameEngine): void {
   if (game.phase === GamePhase.PLAYING_FIRST_TRICK) {
     playCurrentTrick(game)
     game.revealTalon()
-    const declarer = game.getPlayerView('A').contract!.declarerId
-    const cards = game.getPlayerView(declarer).ownHand
-    game.discard(declarer, [cards[0]!.id, cards[1]!.id])
+    const recipient = game.getPlayerView('A').currentPlayerId!
+    const cards = game.getPlayerView(recipient).ownHand
+    game.discard(recipient, [cards[0]!.id, cards[1]!.id])
   }
   while (game.phase !== GamePhase.SCORING) {
     if (game.phase === GamePhase.RASPASY_TALON_REVEAL) game.revealNextRaspasyTalonCard()
@@ -152,25 +152,25 @@ describe('gioco delle carte e tallone personalizzato', () => {
     const game = engine(8); startNormal(game)
     expect(game.getPlayerView('A').ownHand).toHaveLength(10)
     expect(game.getPlayerView('A').currentPlayerId).toBe('A')
-    playCurrentTrick(game)
+    const winner = playCurrentTrick(game)
     expect(game.phase).toBe(GamePhase.TALON_REVEAL)
     expect(() => game.playCard(game.firstPlayerId, 'x')).toThrow(/stato/)
     game.revealTalon()
     expect(game.phase).toBe(GamePhase.DECLARER_DISCARD)
-    expect(game.getPlayerView('A').ownHand).toHaveLength(11)
-    expect(() => game.playCard('A', game.getPlayerView('A').ownHand[0]!.id)).toThrow(/stato/)
-    const hand = game.getPlayerView('A').ownHand
-    game.discard('A', [hand[0]!.id, hand[1]!.id])
+    expect(game.getPlayerView(winner).ownHand).toHaveLength(11)
+    expect(() => game.playCard(winner, game.getPlayerView(winner).ownHand[0]!.id)).toThrow(/stato/)
+    const hand = game.getPlayerView(winner).ownHand
+    game.discard(winner, [hand[0]!.id, hand[1]!.id])
     expect(game.phase).toBe(GamePhase.PLAYING)
-    expect(game.getPlayerView('A').ownHand).toHaveLength(9)
+    expect(game.getPlayerView(winner).ownHand).toHaveLength(9)
   })
 
   it('permette di scartare qualsiasi coppia posseduta e fa condurre il vincitore', () => {
     const game = engine(15); startNormal(game)
     const winner = playCurrentTrick(game)
     game.revealTalon()
-    const hand = game.getPlayerView('A').ownHand
-    game.discard('A', [hand.at(-1)!.id, hand.at(-2)!.id])
+    const hand = game.getPlayerView(winner).ownHand
+    game.discard(winner, [hand.at(-1)!.id, hand.at(-2)!.id])
     expect(game.getPlayerView('A').currentPlayerId).toBe(winner)
   })
 })
@@ -307,15 +307,15 @@ describe('informazione imperfetta e anti-cheat', () => {
     expect(game.getPlayerView('A').publicHands.B).toHaveLength(10)
     expect(game.getPlayerView('A').publicHands.C).toHaveLength(10)
     expect(game.getPlayerView('B').publicHands.A).toBeUndefined()
-    playCurrentTrick(game)
+    const winner = playCurrentTrick(game)
     game.revealTalon()
-    const cards = game.getPlayerView('A').ownHand
+    const cards = game.getPlayerView(winner).ownHand
     const discarded = [cards[0]!.id, cards[1]!.id] as const
-    game.discard('A', discarded)
+    game.discard(winner, discarded)
     for (const id of ['A', 'B', 'C']) expect(game.getPlayerView(id).revealedTalon).toHaveLength(2)
-    expect(game.getPlayerView('A').ownDiscards.map(card => card.id)).toEqual(discarded)
-    expect(game.getPlayerView('B').ownDiscards).toEqual([])
-    expect(game.getPlayerView('C').events.find(event => event.type === 'CARDS_DISCARDED')!.data).toEqual({ playerId: 'A', count: 2 })
+    expect(game.getPlayerView(winner).ownDiscards.map(card => card.id)).toEqual(discarded)
+    for (const id of ['A', 'B', 'C'].filter(id => id !== winner)) expect(game.getPlayerView(id).ownDiscards).toEqual([])
+    expect(game.getPlayerView('C').events.find(event => event.type === 'CARDS_DISCARDED')!.data).toEqual({ playerId: winner, count: 2 })
   })
 
   it('non apre le mani difensive quando entrambi vistano', () => {

@@ -217,7 +217,22 @@ button:disabled{opacity:.42;cursor:not-allowed}
 @media(max-width:620px){.welcome-primary-actions{grid-template-columns:1fr}.welcome-primary-actions>a,.welcome-primary-actions>button{min-height:92px}.welcome-secondary-actions{margin-top:.8rem}}
 
 /* Tipografia ispirata all'editoria cirillica, con titoli più leggeri. */
-:root{font-family:"PT Sans",ui-sans-serif,system-ui,sans-serif}
-button,input,select,textarea{font-family:"PT Sans",ui-sans-serif,system-ui,sans-serif}
-h1,h2,h3,h4,.setup-hero h1,.setup-panel h2,.game-header h1,.section-heading h2,.page-section>h2,.wizard>header h2,.american-overlay p,.manual-layout>aside h2,.manual-content>h1,.learn-page h1,.manual-content article h2,.learn-grid h2,.login-page h1,.bot-setup-page h1,.g-topbar>div strong,.g-player-badge strong,.g-human>header strong,.g-contract-chip strong,.g-decision-panel header strong,.g-discard-panel strong,.g-hand-summary h2,.g-sheet h2,.g-auction-confirm strong{font-family:"PT Serif",Georgia,serif!important;font-weight:400!important;letter-spacing:-.012em}
-.brand,.welcome-primary-actions strong{font-family:"PT Serif",Georgia,serif;font-weight:400}
+:root{font-family:"Cormorant Garamond",Georgia,serif;font-size:17px}
+button,input,select,textarea{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500}
+h1,h2,h3,h4,.setup-hero h1,.setup-panel h2,.game-header h1,.section-heading h2,.page-section>h2,.wizard>header h2,.american-overlay p,.manual-layout>aside h2,.manual-content>h1,.learn-page h1,.manual-content article h2,.learn-grid h2,.login-page h1,.bot-setup-page h1,.g-topbar>div strong,.g-player-badge strong,.g-human>header strong,.g-contract-chip strong,.g-decision-panel header strong,.g-discard-panel strong,.g-hand-summary h2,.g-sheet h2,.g-auction-confirm strong{font-family:"Cormorant Garamond",Georgia,serif!important;font-weight:500!important;letter-spacing:.005em}
+.brand,.welcome-primary-actions strong{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500}
+.welcome-page>header h1,.login-page h1,.bot-setup-page h1{font-size:clamp(1.85rem,4.5vw,3rem)!important;line-height:1.05}
+
+/* Il dichiarante è riconoscibile a colpo d'occhio. */
+.g-opponent.is-declarer .g-player-badge,.g-human.is-declarer>header{border-color:#67a9ff;box-shadow:0 8px 0 -3px #2186ff,0 0 28px #2186ff88;background:#082f47e8}
+.g-opponent.is-declarer:after,.g-human.is-declarer:after{content:"";position:absolute;left:20%;right:20%;bottom:-8px;height:16px;border-radius:50%;background:#168cff;filter:blur(13px);opacity:.72;pointer-events:none}
+
+/* Desktop: tavolo più raccolto e tabellone fisso nella colonna destra. */
+@media(min-width:900px){
+  .game-table-page{padding-right:250px;background:#071516}
+  .g-table{width:100%;border-radius:0 28px 28px 0}
+  .g-topbar{margin-right:-250px;padding-right:270px}
+  .g-scoreboard-pinned{position:fixed;left:auto;right:18px;top:86px;width:214px;transform:none;flex-direction:column}
+  .g-scoreboard-pinned>div{min-width:0;width:100%;padding:.65rem .7rem}
+  .g-scoreboard-pinned>div+div{border-top:1px solid #ffffff18;border-left:0}
+}
