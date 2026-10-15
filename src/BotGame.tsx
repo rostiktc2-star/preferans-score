@@ -45,9 +45,12 @@ function Opponent({ id, side, view, animation }: { id: PlayerId; side: 'left' | 
   const cards = view.publicHands[id], count = view.handSizes[id] ?? 0, decision = view.defenderDecisions[id]
   const profile = profileOf(id, view.handNumber)
   const bubbleEvent = animation?.kind === 'BID_BUBBLE' && animation.event.data.playerId === id ? animation.event : undefined
-  const bubble = bubbleEvent ? bubbleEvent.type === 'PLAYER_PASSED' || bubbleEvent.type === 'DEFENDER_PASS' ? 'Pass' : bubbleEvent.type === 'DEFENDER_VIST' ? 'Vist' : bubbleEvent.type === 'POLVIST_DECLARED' ? 'Polvist' : bidLabel(bubbleEvent.data.bid as Bid) : undefined
+  const lastAuctionAction = [...view.auction].reverse().find(record => record.playerId === id)?.action
+  const bubble = bubbleEvent ? bubbleEvent.type === 'PLAYER_PASSED' || bubbleEvent.type === 'DEFENDER_PASS' ? 'Pass' : bubbleEvent.type === 'DEFENDER_VIST' ? 'Vist' : bubbleEvent.type === 'POLVIST_DECLARED' ? 'Polvist' : bidLabel(bubbleEvent.data.bid as Bid) : view.phase === GamePhase.BIDDING && lastAuctionAction ? lastAuctionAction === 'PASS' ? 'Passo' : bidLabel(lastAuctionAction) : decision ? decision === DefenderDecision.PASS ? 'Passo' : decision === DefenderDecision.VIST ? 'Vist' : 'Polvist' : undefined
+  const isThinking = view.currentPlayerId === id && [GamePhase.BIDDING, GamePhase.DEFENDER_DECISIONS, GamePhase.PLAYING_FIRST_TRICK, GamePhase.PLAYING, GamePhase.RASPASY_PLAYING, GamePhase.DECLARER_DISCARD].includes(view.phase)
   return <article className={`g-opponent is-${side} ${view.currentPlayerId === id ? 'is-turn' : ''} ${view.contract?.declarerId === id ? 'is-declarer' : ''}`} data-testid={`opponent-${id}`}>
-    {bubble && <div className="g-speech" role="status">{bubble}</div>}
+    {bubble && <div className="g-speech" role="status"><small>Ha dichiarato</small><strong>{bubble}</strong></div>}
+    {isThinking && <div className="g-thinking" role="status">Sta pensando<span>...</span></div>}
     <div className="g-player-badge"><img className="g-avatar" src={profile.avatar} alt=""/><div><strong>{profile.name}</strong><small>{view.tricksWon[id] ?? 0} prese · {count} carte</small></div></div>
     <div className={`g-opponent-hand ${cards ? 'is-open' : ''}`} aria-label={`Mano di ${profile.name}: ${cards ? 'pubblica' : 'coperta'}`}>{(cards ?? Array.from({ length: count }, () => undefined)).map((card, index) => <PlayingCard key={card?.id ?? `${id}-back-${index}`} card={card} face={card ? 'front' : 'back'} publicCard={Boolean(card)} compact />)}</div>
     <div className="g-role-row">{view.contract?.declarerId === id && <span>Dichiarante</span>}{decision && <span>{decision}</span>}</div>
@@ -104,7 +107,7 @@ function AuctionPanel({ view, onAction }: { view: PlayerView; onAction: (action:
 }
 function DefenderPanel({ view, onDecision }: { view: PlayerView; onDecision: (decision: DefenderDecision) => void }) {
   if (view.phase !== GamePhase.DEFENDER_DECISIONS || view.currentPlayerId !== HUMAN) return null
-  return <section className="g-decision-panel" aria-label="Decisione difensiva"><header><span>Difesa</span><strong>Come rispondi?</strong></header><div className="g-defender-actions">{view.legalDefenderDecisions.map(decision => <button key={decision} onClick={() => onDecision(decision)}>{decision === DefenderDecision.PASS ? 'Pass' : decision === DefenderDecision.VIST ? 'Vist' : 'Polvist'}</button>)}</div></section>
+  return <section className="g-decision-panel g-defender-panel" aria-label="Decisione difensiva"><header><span>Difesa</span><strong>Come rispondi?</strong></header><div className="g-defender-actions">{view.legalDefenderDecisions.map(decision => <button key={decision} onClick={() => onDecision(decision)}>{decision === DefenderDecision.PASS ? 'Pass' : decision === DefenderDecision.VIST ? 'Vist' : 'Polvist'}</button>)}</div></section>
 }
 
 function PinnedScoreboard({ view, poolTarget }: { view: PlayerView; poolTarget: number }) {
@@ -166,7 +169,7 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
     if (busy || [GamePhase.HAND_COMPLETE, GamePhase.GAME_COMPLETE].includes(view.phase)) return
     const humanTurn = view.currentPlayerId === HUMAN && [GamePhase.BIDDING, GamePhase.DEFENDER_DECISIONS, GamePhase.PLAYING_FIRST_TRICK, GamePhase.PLAYING, GamePhase.RASPASY_PLAYING, GamePhase.DECLARER_DISCARD].includes(view.phase)
     if (humanTurn) return
-    const delayBase = speed === 'slow' ? 2800 : speed === 'fast' ? 950 : 1750
+    const thinkingDelay = 4000 + Math.random() * 6000
     const timer = window.setTimeout(async () => {
       try {
         const decide = async (playerId: string) => advancedAi ? (await advisorRef.current!.decide(botsRef.current![playerId]!, engine.getPlayerView(playerId))).decision : botsRef.current![playerId]!.decide(engine.getPlayerView(playerId))
@@ -180,7 +183,7 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
         else if (view.phase === GamePhase.SCORING) engine.scoreHand()
         refresh()
       } catch (error) { setMessage(error instanceof Error ? error.message : 'La giocata non è valida.') }
-    }, delayBase + Math.random() * 550)
+    }, thinkingDelay)
     return () => clearTimeout(timer)
   }, [advancedAi, busy, engine, reducedMotion, refresh, revision, speed, view.currentPlayerId, view.phase])
 
@@ -194,6 +197,9 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
   const nextHand = () => { engine.nextHand(); setSelected([]); setMessage(''); refresh() }
   const resetGame = () => { if (!confirm('Ricominciare la partita?')) return; engineRef.current = newEngine(poolTarget); presentationRef.current = new GamePresentationController(); botsRef.current = newBots(); advisorRef.current = new AdvancedBotAdvisor({ enabled: advancedAi, mode: advancedMode, maxCallsPerHand: 4, maxCallsPerGame: 40, budgetLimitUsd: .25, timeoutMs: 4000 }); recordedHands.current.clear(); setSelected([]); setMessage(''); setRevision(value => value + 1); setAnimationRevision(value => value + 1) }
   const summary = resultSummary(view), contractText = view.contract ? view.contract.kind === ContractKind.MIZER ? 'Mizer' : `${view.contract.level}${suitLabel(view.contract.trump)}` : view.phase.toString().startsWith('RASPASY') ? `Raspasy ×${view.raspasyValue}` : 'Asta'
+  const leadingAuction = [...view.auction].reverse().find(record => record.action !== 'PASS')
+  const commandingBid = view.contract ? contractText : leadingAuction && leadingAuction.action !== 'PASS' ? bidLabel(leadingAuction.action) : 'Asta aperta'
+  const commandingPlayer = view.contract ? nameOf(view.contract.declarerId, view.handNumber) : leadingAuction ? nameOf(leadingAuction.playerId, view.handNumber) : 'Nessuna dichiarazione'
   const tableCards = view.currentTrick?.cards ?? (animation?.kind === 'CAPTURE_TRICK' ? view.completedTricks.at(-1)?.cards ?? [] : [])
   const animatedDiscards = animation?.kind === 'DISCARD_SEQUENCE' ? animation.event.data.cards as Card[] | undefined : undefined
 
@@ -201,7 +207,7 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
     <header className="g-topbar"><button className="g-menu-button" onClick={onBack} aria-label="Torna al menu" title="Torna al menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h11v18H4zM15 12h5M18 9l3 3-3 3M7 12h.01"/></svg></button><div><strong>Preferans</strong></div><nav><button className="g-settings-button" onClick={() => setSettingsOpen(value => !value)} aria-label="Impostazioni" aria-expanded={settingsOpen}>⚙</button></nav></header>
     {settingsOpen && <aside className="g-settings"><label>Velocità<select value={speed} onChange={event => setSpeed(event.target.value as GameSpeed)}><option value="slow">Lenta</option><option value="normal">Normale</option><option value="fast">Veloce</option></select></label><label className="g-ai-toggle"><input type="checkbox" checked={advancedAi} onChange={event => setAdvancedAi(event.target.checked)}/> AI avanzata {advancedAi ? 'attiva' : 'disattiva'}</label><label>Modalità AI<select value={advancedMode} disabled={!advancedAi} onChange={event => setAdvancedMode(event.target.value as AdvancedAiMode)}><option value={AdvancedAiMode.CONSERVATIVE}>Conservative</option><option value={AdvancedAiMode.BALANCED}>Balanced</option><option value={AdvancedAiMode.CREATIVE}>Creative</option></select></label>{advancedAi && <small className="g-ai-status">{advisorRef.current.stats.requests} richieste · ${advisorRef.current.stats.estimatedCostUsd.toFixed(4)} stimati</small>}<button onClick={() => setMuted(value => !value)}>{muted ? 'Audio spento' : 'Audio basso'}</button><button onClick={() => setAutoSort(value => !value)}>Ordine {autoSort ? 'automatico' : 'manuale'}</button><button onClick={() => { presentation.queue.skipCurrentAnimation(); setAnimationRevision(value => value + 1) }}>Salta movimento</button><button onClick={() => { presentation.queue.skipAllAnimations(); setAnimationRevision(value => value + 1) }}>Salta tutto</button><button className="g-danger" onClick={resetGame}>Ricomincia</button></aside>}
     <div className={`g-table ${animation ? `anim-${animation.kind.toLowerCase()}` : ''}`}>
-      <div className="g-hand-number" aria-label={`Mano ${view.handNumber}`}><small>Mano</small><strong>{view.handNumber}</strong></div>
+      <div className="g-round-status"><div className="g-commanding-bid"><small>Comanda</small><strong>{commandingBid}</strong><span>{commandingPlayer}</span></div><div className="g-hand-number" aria-label={`Mano ${view.handNumber}`}><small>Mano</small><strong>{view.handNumber}</strong></div></div>
       <PinnedScoreboard view={view} poolTarget={poolTarget}/>
       <div className="g-deck" aria-label="Mazzo"><PlayingCard face="back" compact/><PlayingCard face="back" compact/></div>
       <Opponent id={BOT_LEFT} side="left" view={view} animation={animation}/><Opponent id={BOT_RIGHT} side="right" view={view} animation={animation}/>
