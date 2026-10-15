@@ -7,6 +7,9 @@ const PLAYERS = [{ id: HUMAN, name: 'Tu' }, { id: BOT_LEFT, name: 'Alex' }, { id
 const SUIT_SYMBOL: Record<Suit, string> = { [Suit.SPADES]: '♠', [Suit.CLUBS]: '♣', [Suit.DIAMONDS]: '♦', [Suit.HEARTS]: '♥' }
 const SUIT_NAME: Record<Suit, string> = { [Suit.SPADES]: 'picche', [Suit.CLUBS]: 'fiori', [Suit.DIAMONDS]: 'quadri', [Suit.HEARTS]: 'cuori' }
 const RANK_LABEL: Record<Rank, string> = { [Rank.SEVEN]: '7', [Rank.EIGHT]: '8', [Rank.NINE]: '9', [Rank.TEN]: '10', [Rank.JACK]: 'J', [Rank.QUEEN]: 'Q', [Rank.KING]: 'K', [Rank.ACE]: 'A' }
+const ATLAS_SUIT: Record<Suit, string> = { [Suit.SPADES]: 's', [Suit.CLUBS]: 'c', [Suit.DIAMONDS]: 'd', [Suit.HEARTS]: 'h' }
+const ATLAS_RANK: Record<Rank, string> = { [Rank.SEVEN]: '7', [Rank.EIGHT]: '8', [Rank.NINE]: '9', [Rank.TEN]: '10', [Rank.JACK]: 'j', [Rank.QUEEN]: 'q', [Rank.KING]: 'k', [Rank.ACE]: 'a' }
+const atlasSprite = `${import.meta.env.BASE_URL}cards/atlasnye/atlasnye.svg`
 const nameOf = (id?: string) => PLAYERS.find(player => player.id === id)?.name ?? '—'
 const suitLabel = (trump: Trump) => trump === 'NT' ? 'NT' : SUIT_SYMBOL[trump]
 const bidLabel = (bid: Bid) => bid.kind === ContractKind.MIZER ? 'Mizer' : `${bid.level}${suitLabel(bid.trump)}`
@@ -21,7 +24,7 @@ function PlayingCard({ card, face = 'front', selected, playable, disabled, publi
   const red = card?.suit === Suit.DIAMONDS || card?.suit === Suit.HEARTS
   const label = face === 'back' || !card ? 'Carta coperta' : `${RANK_LABEL[card.rank]} di ${SUIT_NAME[card.suit]}`
   return <button type="button" className={`g-card ${face === 'back' ? 'is-back' : 'is-front'} ${red ? 'is-red' : ''} ${selected ? 'is-selected' : ''} ${playable ? 'is-playable' : ''} ${disabled ? 'is-disabled' : ''} ${publicCard ? 'is-public' : ''} ${compact ? 'is-compact' : ''} ${animation ? `is-${animation}` : ''}`} aria-label={label} aria-pressed={selected} aria-disabled={disabled} draggable={Boolean(playable && !disabled)} onDragStart={onDragStart} onClick={onClick}>
-    {face === 'front' && card ? <><span className="g-card-corner"><b>{RANK_LABEL[card.rank]}</b><i>{SUIT_SYMBOL[card.suit]}</i></span><span className="g-card-pip" aria-hidden>{SUIT_SYMBOL[card.suit]}</span><span className="g-card-corner is-bottom" aria-hidden><b>{RANK_LABEL[card.rank]}</b><i>{SUIT_SYMBOL[card.suit]}</i></span></> : <span className="g-card-back-pattern" aria-hidden>♢</span>}
+    <svg className="g-card-art" viewBox="0 0 1000 1500" aria-hidden="true"><use href={`${atlasSprite}#${face === 'front' && card ? `${ATLAS_SUIT[card.suit]}_${ATLAS_RANK[card.rank]}` : 'back_blue'}`}/></svg>
   </button>
 }
 
