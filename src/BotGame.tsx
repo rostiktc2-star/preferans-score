@@ -4,13 +4,26 @@ import { AdvancedAiMode, AdvancedBotAdvisor, PlayStyle, PreferansBot, SkillLevel
 
 const HUMAN = 'you', BOT_LEFT = 'alex', BOT_RIGHT = 'mikhail'
 const PLAYERS = [{ id: HUMAN, name: 'Tu' }, { id: BOT_LEFT, name: 'Alex' }, { id: BOT_RIGHT, name: 'Mikhail' }] as const
+const BOT_PROFILES = [
+  { name: 'Aleksandr', avatar: 'aleksandr.svg' }, { name: 'Sofija', avatar: 'sofija.svg' },
+  { name: 'Dmitrij', avatar: 'dmitrij.svg' }, { name: 'Katja', avatar: 'katja.svg' },
+  { name: 'Nikolaj', avatar: 'nikolaj.svg' }, { name: 'Vera', avatar: 'vera.svg' },
+] as const
 const SUIT_SYMBOL: Record<Suit, string> = { [Suit.SPADES]: '♠', [Suit.CLUBS]: '♣', [Suit.DIAMONDS]: '♦', [Suit.HEARTS]: '♥' }
 const SUIT_NAME: Record<Suit, string> = { [Suit.SPADES]: 'picche', [Suit.CLUBS]: 'fiori', [Suit.DIAMONDS]: 'quadri', [Suit.HEARTS]: 'cuori' }
 const RANK_LABEL: Record<Rank, string> = { [Rank.SEVEN]: '7', [Rank.EIGHT]: '8', [Rank.NINE]: '9', [Rank.TEN]: '10', [Rank.JACK]: 'J', [Rank.QUEEN]: 'Q', [Rank.KING]: 'K', [Rank.ACE]: 'A' }
 const ATLAS_SUIT: Record<Suit, string> = { [Suit.SPADES]: 's', [Suit.CLUBS]: 'c', [Suit.DIAMONDS]: 'd', [Suit.HEARTS]: 'h' }
 const ATLAS_RANK: Record<Rank, string> = { [Rank.SEVEN]: '7', [Rank.EIGHT]: '8', [Rank.NINE]: '9', [Rank.TEN]: '10', [Rank.JACK]: 'j', [Rank.QUEEN]: 'q', [Rank.KING]: 'k', [Rank.ACE]: 'a' }
 const atlasSprite = `${import.meta.env.BASE_URL}cards/atlasnye/atlasnye.svg`
-const nameOf = (id?: string) => PLAYERS.find(player => player.id === id)?.name ?? '—'
+const avatarBase = `${import.meta.env.BASE_URL}avatars/`
+const profileOf = (id: string | undefined, handNumber: number) => {
+  if (id === HUMAN) return { name: 'Tu', avatar: `${avatarBase}you.svg` }
+  const handOffset = Math.max(0, handNumber - 1) * 2
+  const index = id === BOT_LEFT ? handOffset % BOT_PROFILES.length : (handOffset + 1) % BOT_PROFILES.length
+  const profile = BOT_PROFILES[index]!
+  return { name: profile.name, avatar: `${avatarBase}${profile.avatar}` }
+}
+const nameOf = (id: string | undefined, handNumber: number) => profileOf(id, handNumber).name
 const suitLabel = (trump: Trump) => trump === 'NT' ? 'NT' : SUIT_SYMBOL[trump]
 const bidLabel = (bid: Bid) => bid.kind === ContractKind.MIZER ? 'Mizer' : `${bid.level}${suitLabel(bid.trump)}`
 const newEngine = (poolTarget: number) => { const game = new GameEngine({ players: PLAYERS, poolTarget }); game.startGame(); return game }
@@ -30,12 +43,13 @@ function PlayingCard({ card, face = 'front', selected, playable, disabled, publi
 
 function Opponent({ id, side, view, animation }: { id: PlayerId; side: 'left' | 'right'; view: PlayerView; animation?: PresentationAnimation }) {
   const cards = view.publicHands[id], count = view.handSizes[id] ?? 0, decision = view.defenderDecisions[id]
+  const profile = profileOf(id, view.handNumber)
   const bubbleEvent = animation?.kind === 'BID_BUBBLE' && animation.event.data.playerId === id ? animation.event : undefined
   const bubble = bubbleEvent ? bubbleEvent.type === 'PLAYER_PASSED' || bubbleEvent.type === 'DEFENDER_PASS' ? 'Pass' : bubbleEvent.type === 'DEFENDER_VIST' ? 'Vist' : bubbleEvent.type === 'POLVIST_DECLARED' ? 'Polvist' : bidLabel(bubbleEvent.data.bid as Bid) : undefined
   return <article className={`g-opponent is-${side} ${view.currentPlayerId === id ? 'is-turn' : ''} ${view.contract?.declarerId === id ? 'is-declarer' : ''}`} data-testid={`opponent-${id}`}>
     {bubble && <div className="g-speech" role="status">{bubble}</div>}
-    <div className="g-player-badge"><span className="g-avatar">{nameOf(id).slice(0, 1)}</span><div><strong>{nameOf(id)}</strong><small>{view.tricksWon[id] ?? 0} prese · {count} carte</small></div></div>
-    <div className={`g-opponent-hand ${cards ? 'is-open' : ''}`} aria-label={`Mano di ${nameOf(id)}: ${cards ? 'pubblica' : 'coperta'}`}>{(cards ?? Array.from({ length: count }, () => undefined)).map((card, index) => <PlayingCard key={card?.id ?? `${id}-back-${index}`} card={card} face={card ? 'front' : 'back'} publicCard={Boolean(card)} compact />)}</div>
+    <div className="g-player-badge"><img className="g-avatar" src={profile.avatar} alt=""/><div><strong>{profile.name}</strong><small>{view.tricksWon[id] ?? 0} prese · {count} carte</small></div></div>
+    <div className={`g-opponent-hand ${cards ? 'is-open' : ''}`} aria-label={`Mano di ${profile.name}: ${cards ? 'pubblica' : 'coperta'}`}>{(cards ?? Array.from({ length: count }, () => undefined)).map((card, index) => <PlayingCard key={card?.id ?? `${id}-back-${index}`} card={card} face={card ? 'front' : 'back'} publicCard={Boolean(card)} compact />)}</div>
     <div className="g-role-row">{view.contract?.declarerId === id && <span>Dichiarante</span>}{decision && <span>{decision}</span>}</div>
   </article>
 }
@@ -46,6 +60,7 @@ function AuctionPanel({ view, onAction }: { view: PlayerView; onAction: (action:
   const firstBid = bids[0]
   const [level, setLevel] = useState<6 | 7 | 8 | 9 | 10 | 'MIZER'>(() => firstBid?.kind === ContractKind.MIZER ? 'MIZER' : firstBid?.level ?? 6)
   const [trump, setTrump] = useState<Trump>(() => firstBid?.kind === ContractKind.NORMAL ? firstBid.trump : Suit.SPADES)
+  const [isChoosing, setIsChoosing] = useState(false)
   const legalKey = bids.map(bidLabel).join('|')
   useEffect(() => {
     if (!firstBid) return
@@ -57,8 +72,9 @@ function AuctionPanel({ view, onAction }: { view: PlayerView; onAction: (action:
   // legalKey represents the complete set of choices for this turn.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legalKey])
+  useEffect(() => { setIsChoosing(false) }, [view.handNumber, view.currentPlayerId])
   if (view.phase !== GamePhase.BIDDING || view.currentPlayerId !== HUMAN || legal.length === 0) return null
-  const levels = [6, 7, 8, 'MIZER', 9, 10] as const
+  const levels = [6, 7, 8, 9, 10, 'MIZER'] as const
   const trumps = [Suit.SPADES, Suit.CLUBS, Suit.DIAMONDS, Suit.HEARTS, 'NT'] as const
   const selectedBid = bids.find(bid => level === 'MIZER' ? bid.kind === ContractKind.MIZER : bid.kind === ContractKind.NORMAL && bid.level === level && bid.trump === trump)
   const chooseLevel = (nextLevel: typeof levels[number]) => {
@@ -68,19 +84,22 @@ function AuctionPanel({ view, onAction }: { view: PlayerView; onAction: (action:
     if (available.kind === ContractKind.NORMAL) setTrump(available.trump)
   }
   return <section className="g-decision-panel g-auction-panel" aria-label="La tua dichiarazione">
-    <header><span>Asta</span><strong>Scegli il contratto</strong></header>
-    <div className="g-auction-picker">
+    <header><span>Asta</span><strong>{isChoosing ? 'Scegli il contratto' : 'La tua dichiarazione'}</strong></header>
+    {!isChoosing ? <div className="g-auction-start">
+      <button className="g-start-declare" disabled={bids.length === 0} onClick={() => setIsChoosing(true)}>Dichiara</button>
+      {legal.includes('PASS') && <button className="g-start-pass" onClick={() => onAction('PASS')}>Passo</button>}
+    </div> : <div className="g-auction-picker">
       <div className="g-wheel-group"><small>Livello</small><div className="g-wheel" role="radiogroup" aria-label="Livello del contratto">{levels.map(item => {
         const available = bids.some(bid => item === 'MIZER' ? bid.kind === ContractKind.MIZER : bid.kind === ContractKind.NORMAL && bid.level === item)
         return <button key={item} role="radio" aria-checked={level === item} className={level === item ? 'is-active' : ''} disabled={!available} onClick={() => chooseLevel(item)}>{item === 'MIZER' ? 'Mizer' : item}</button>
       })}</div></div>
-      <div className={`g-wheel-group ${level === 'MIZER' ? 'is-muted' : ''}`}><small>{level === 'MIZER' ? 'Nessuna briscola' : 'Briscola'}</small><div className="g-wheel g-suit-wheel" role="radiogroup" aria-label="Seme di briscola">{trumps.map(item => {
+      <div className={`g-wheel-group ${level === 'MIZER' ? 'is-muted' : ''}`}><small>{level === 'MIZER' ? 'Senza atout' : 'Atout'}</small><div className="g-wheel g-suit-wheel" role="radiogroup" aria-label="Seme di atout">{trumps.map(item => {
         const available = level !== 'MIZER' && bids.some(bid => bid.kind === ContractKind.NORMAL && bid.level === level && bid.trump === item)
         return <button key={item} role="radio" aria-label={item === 'NT' ? 'Senza atout' : SUIT_NAME[item]} aria-checked={level !== 'MIZER' && trump === item} className={`${level !== 'MIZER' && trump === item ? 'is-active' : ''} ${item === Suit.DIAMONDS || item === Suit.HEARTS ? 'is-red' : ''}`} disabled={!available} onClick={() => setTrump(item)}>{item === 'NT' ? 'NT' : SUIT_SYMBOL[item]}</button>
       })}</div></div>
-      <div className="g-auction-confirm"><small>Contratto scelto</small><strong>{selectedBid ? bidLabel(selectedBid) : '—'}</strong><button disabled={!selectedBid} onClick={() => selectedBid && onAction(selectedBid)}>Dichiara</button></div>
-    </div>
-    {legal.includes('PASS') && <button className="g-pass-button" onClick={() => onAction('PASS')}>Passo</button>}
+      <div className="g-auction-selected"><small>Contratto scelto</small><strong>{selectedBid ? bidLabel(selectedBid) : '—'}</strong></div>
+      <button className="g-auction-confirm" disabled={!selectedBid} onClick={() => selectedBid && onAction(selectedBid)}>Dichiara</button>
+    </div>}
   </section>
 }
 function DefenderPanel({ view, onDecision }: { view: PlayerView; onDecision: (decision: DefenderDecision) => void }) {
@@ -93,11 +112,11 @@ function PinnedScoreboard({ view, poolTarget }: { view: PlayerView; poolTarget: 
   return <aside className="g-scoreboard-pinned" aria-label="Punteggio e ultime prese sempre visibili">
     <header><span>Partita</span><strong>Punteggio</strong></header>
     <div className="g-score-players">{PLAYERS.map(player => <article key={player.id}>
-      <strong>{player.name}</strong>
+      <strong>{nameOf(player.id, view.handNumber)}</strong>
       <div className="g-score-main"><span>Pozzo <b>{view.scoreboard.scores[player.id]!.pool}/{poolTarget}</b></span><span>Multa <b>{view.scoreboard.scores[player.id]!.penalty}</b></span></div>
-      <div className="g-score-credits"><small>Crediti</small>{PLAYERS.filter(other => other.id !== player.id).map(other => <span key={other.id}>vs {other.name} <b>{view.scoreboard.credits[player.id]![other.id]}</b></span>)}</div>
+      <div className="g-score-credits"><small>Crediti</small>{PLAYERS.filter(other => other.id !== player.id).map(other => <span key={other.id}>vs {nameOf(other.id, view.handNumber)} <b>{view.scoreboard.credits[player.id]![other.id]}</b></span>)}</div>
     </article>)}</div>
-    <section className="g-recent-tricks"><h3>Ultime prese</h3>{recentTricks.length === 0 ? <p>Nessuna presa giocata</p> : recentTricks.map(trick => <div key={trick.number}><span>№ {trick.number}</span><strong>{nameOf(trick.winnerId)}</strong><small>{trick.cards.map(play => `${RANK_LABEL[play.card.rank]}${SUIT_SYMBOL[play.card.suit]}`).join(' · ')}</small></div>)}</section>
+    <section className="g-recent-tricks"><h3>Ultime prese</h3>{recentTricks.length === 0 ? <p>Nessuna presa giocata</p> : recentTricks.map(trick => <div key={trick.number}><span>№ {trick.number}</span><strong>{nameOf(trick.winnerId, view.handNumber)}</strong><small>{trick.cards.map(play => `${RANK_LABEL[play.card.rank]}${SUIT_SYMBOL[play.card.suit]}`).join(' · ')}</small></div>)}</section>
   </aside>
 }
 function resultSummary(view: PlayerView): { title: string; lines: string[] } {
@@ -105,7 +124,7 @@ function resultSummary(view: PlayerView): { title: string; lines: string[] } {
   const result = scoreEvent?.data.result as { kind?: string; poolAwards?: Record<string, number>; penalties?: Record<string, number>; credits?: Record<string, Record<string, number>> } | undefined
   if (!result) return { title: 'Mano conclusa', lines: [] }
   const title = result.kind === 'MIZER' ? 'Mizer concluso' : result.kind === 'RASPASY' ? `Raspasy ×${view.raspasyValue}` : view.contract ? `${view.contract.level}${suitLabel(view.contract.trump)}` : 'Mano conclusa'
-  const lines = PLAYERS.map(player => { const pool = result.poolAwards?.[player.id] ?? 0, penalty = result.penalties?.[player.id] ?? 0, credit = Object.values(result.credits?.[player.id] ?? {}).reduce((sum, value) => sum + value, 0); return `${player.name}: ${view.tricksWon[player.id]} prese${pool ? ` · +${pool} Pozzo` : ''}${penalty ? ` · +${penalty} Multa` : ''}${credit ? ` · +${credit} Crediti` : ''}` })
+  const lines = PLAYERS.map(player => { const pool = result.poolAwards?.[player.id] ?? 0, penalty = result.penalties?.[player.id] ?? 0, credit = Object.values(result.credits?.[player.id] ?? {}).reduce((sum, value) => sum + value, 0); return `${nameOf(player.id, view.handNumber)}: ${view.tricksWon[player.id]} prese${pool ? ` · +${pool} Pozzo` : ''}${penalty ? ` · +${penalty} Multa` : ''}${credit ? ` · +${credit} Crediti` : ''}` })
   return { title, lines }
 }
 
@@ -179,21 +198,22 @@ export default function BotGame({ onBack, poolTarget, onHandCompleted }: { onBac
   const animatedDiscards = animation?.kind === 'DISCARD_SEQUENCE' ? animation.event.data.cards as Card[] | undefined : undefined
 
   return <section className={`game-table-page speed-${speed} ${reducedMotion ? 'reduced-motion' : ''}`} data-phase={view.phase}>
-    <header className="g-topbar"><button className="g-menu-button" onClick={onBack} aria-label="Torna al menu" title="Torna al menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h11v18H4zM15 12h5M18 9l3 3-3 3M7 12h.01"/></svg></button><div><span>Preferans Soči</span><strong>Mano {view.handNumber}</strong></div><nav><button className="g-settings-button" onClick={() => setSettingsOpen(value => !value)} aria-label="Impostazioni" aria-expanded={settingsOpen}>⚙</button></nav></header>
+    <header className="g-topbar"><button className="g-menu-button" onClick={onBack} aria-label="Torna al menu" title="Torna al menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h11v18H4zM15 12h5M18 9l3 3-3 3M7 12h.01"/></svg></button><div><strong>Preferans</strong></div><nav><button className="g-settings-button" onClick={() => setSettingsOpen(value => !value)} aria-label="Impostazioni" aria-expanded={settingsOpen}>⚙</button></nav></header>
     {settingsOpen && <aside className="g-settings"><label>Velocità<select value={speed} onChange={event => setSpeed(event.target.value as GameSpeed)}><option value="slow">Lenta</option><option value="normal">Normale</option><option value="fast">Veloce</option></select></label><label className="g-ai-toggle"><input type="checkbox" checked={advancedAi} onChange={event => setAdvancedAi(event.target.checked)}/> AI avanzata {advancedAi ? 'attiva' : 'disattiva'}</label><label>Modalità AI<select value={advancedMode} disabled={!advancedAi} onChange={event => setAdvancedMode(event.target.value as AdvancedAiMode)}><option value={AdvancedAiMode.CONSERVATIVE}>Conservative</option><option value={AdvancedAiMode.BALANCED}>Balanced</option><option value={AdvancedAiMode.CREATIVE}>Creative</option></select></label>{advancedAi && <small className="g-ai-status">{advisorRef.current.stats.requests} richieste · ${advisorRef.current.stats.estimatedCostUsd.toFixed(4)} stimati</small>}<button onClick={() => setMuted(value => !value)}>{muted ? 'Audio spento' : 'Audio basso'}</button><button onClick={() => setAutoSort(value => !value)}>Ordine {autoSort ? 'automatico' : 'manuale'}</button><button onClick={() => { presentation.queue.skipCurrentAnimation(); setAnimationRevision(value => value + 1) }}>Salta movimento</button><button onClick={() => { presentation.queue.skipAllAnimations(); setAnimationRevision(value => value + 1) }}>Salta tutto</button><button className="g-danger" onClick={resetGame}>Ricomincia</button></aside>}
     <div className={`g-table ${animation ? `anim-${animation.kind.toLowerCase()}` : ''}`}>
+      <div className="g-hand-number" aria-label={`Mano ${view.handNumber}`}><small>Mano</small><strong>{view.handNumber}</strong></div>
       <PinnedScoreboard view={view} poolTarget={poolTarget}/>
       <div className="g-deck" aria-label="Mazzo"><PlayingCard face="back" compact/><PlayingCard face="back" compact/></div>
       <Opponent id={BOT_LEFT} side="left" view={view} animation={animation}/><Opponent id={BOT_RIGHT} side="right" view={view} animation={animation}/>
       <section className="g-center" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); playHumanCard(event.dataTransfer.getData('text/card-id')) }}>
-        <div className="g-contract-chip"><strong>{contractText}</strong><small>{view.contract ? `${nameOf(view.contract.declarerId)} · ${view.contract.trump === 'NT' ? 'senza briscola' : `briscola ${SUIT_SYMBOL[view.contract.trump]}`}` : view.phase === GamePhase.BIDDING ? 'dichiarazioni in corso' : 'nessuna briscola'}</small></div>
+        <div className="g-contract-chip"><strong>{contractText}</strong><small>{view.contract ? `${nameOf(view.contract.declarerId, view.handNumber)} · ${view.contract.trump === 'NT' ? 'senza atout' : `atout ${SUIT_SYMBOL[view.contract.trump]}`}` : view.phase === GamePhase.BIDDING ? 'dichiarazioni in corso' : 'nessun atout'}</small></div>
         {view.defenseMode === DefenseMode.ONE_VIST_OPEN && <div className="g-open-vist">Vist aperto</div>}
         <div className="g-talon" data-testid="talon" aria-label={view.revealedTalon.length ? 'Tallone rivelato' : 'Tallone coperto'}>{(view.revealedTalon.length ? view.revealedTalon : [undefined, undefined]).map((card, index) => <PlayingCard key={card?.id ?? `talon-${index}`} card={card} face={card ? 'front' : 'back'} compact animation={animation?.kind === 'FLIP_TALON' ? 'playing' : undefined}/>)}{view.phase === GamePhase.RASPASY_PLAYING && view.currentTrick?.forcedLeadSuit && <small>Tallone: seme richiesto {SUIT_SYMBOL[view.currentTrick.forcedLeadSuit]}</small>}</div>
-        <div className="g-current-trick" data-testid="current-trick">{tableCards.map(play => <div key={play.playerId} className={`g-played-card from-${play.playerId}`}><PlayingCard card={play.card} animation={animation?.kind === 'CAPTURE_TRICK' ? 'captured' : 'playing'}/><small>{nameOf(play.playerId)}</small></div>)}</div>
+        <div className="g-current-trick" data-testid="current-trick">{tableCards.map(play => <div key={play.playerId} className={`g-played-card from-${play.playerId}`}><PlayingCard card={play.card} animation={animation?.kind === 'CAPTURE_TRICK' ? 'captured' : 'playing'}/><small>{nameOf(play.playerId, view.handNumber)}</small></div>)}</div>
         {animatedDiscards && <div className="g-discard-ghost" aria-label="Scarti coperti">{animatedDiscards.map(card => <PlayingCard key={card.id} card={card} animation="captured" compact/>)}</div>}
-        {animation?.kind === 'CAPTURE_TRICK' && <div className="g-winner-flash">Presa a {nameOf(animation.event.data.winnerId as string)}</div>}
+        {animation?.kind === 'CAPTURE_TRICK' && <div className="g-winner-flash">Presa a {nameOf(animation.event.data.winnerId as string, view.handNumber)}</div>}
       </section>
-      <section className={`g-human ${view.currentPlayerId === HUMAN ? 'is-turn' : ''} ${view.contract?.declarerId === HUMAN ? 'is-declarer' : ''}`}><header><div><span className="g-avatar">T</span><div><strong>Tu</strong><small>{view.tricksWon[HUMAN]} prese · {view.ownHand.length} carte</small></div></div><div className="g-role-row">{view.contract?.declarerId === HUMAN && <span>Dichiarante</span>}{view.defenderDecisions[HUMAN] && <span>{view.defenderDecisions[HUMAN]}</span>}</div></header><div className="g-human-hand" aria-label="La tua mano">{humanCards.map((card, index) => <div key={card.id} style={{ '--card-index': index, '--card-count': humanCards.length, '--deal-index': index } as React.CSSProperties}><PlayingCard card={card} selected={selected.includes(card.id)} playable={canPlay && legalIds.has(card.id)} disabled={(canPlay && !legalIds.has(card.id)) || (!canPlay && !isDiscard)} animation={animation?.kind === 'DEAL_SEQUENCE' ? 'dealing' : undefined} onClick={() => clickCard(card)} onDragStart={event => event.dataTransfer.setData('text/card-id', card.id)}/></div>)}</div>{!autoSort && selected.length === 1 && <div className="g-manual-order"><button onClick={() => moveManual(-1)}>← Sposta</button><button onClick={() => moveManual(1)}>Sposta →</button></div>}</section>
+      <section className={`g-human ${view.currentPlayerId === HUMAN ? 'is-turn' : ''} ${view.contract?.declarerId === HUMAN ? 'is-declarer' : ''}`}><header><div><img className="g-avatar" src={profileOf(HUMAN, view.handNumber).avatar} alt=""/><div><strong>Tu</strong><small>{view.tricksWon[HUMAN]} prese · {view.ownHand.length} carte</small></div></div><div className="g-role-row">{view.contract?.declarerId === HUMAN && <span>Dichiarante</span>}{view.defenderDecisions[HUMAN] && <span>{view.defenderDecisions[HUMAN]}</span>}</div></header><div className="g-human-hand" aria-label="La tua mano">{humanCards.map((card, index) => <div key={card.id} style={{ '--card-index': index, '--card-count': humanCards.length, '--deal-index': index } as React.CSSProperties}><PlayingCard card={card} selected={selected.includes(card.id)} playable={canPlay && legalIds.has(card.id)} disabled={(canPlay && !legalIds.has(card.id)) || (!canPlay && !isDiscard)} animation={animation?.kind === 'DEAL_SEQUENCE' ? 'dealing' : undefined} onClick={() => clickCard(card)} onDragStart={event => event.dataTransfer.setData('text/card-id', card.id)}/></div>)}</div>{!autoSort && selected.length === 1 && <div className="g-manual-order"><button onClick={() => moveManual(-1)}>← Sposta</button><button onClick={() => moveManual(1)}>Sposta →</button></div>}</section>
       <AuctionPanel view={view} onAction={action => { engine.makeBid(HUMAN, action); haptic(); refresh() }}/><DefenderPanel view={view} onDecision={decision => { engine.makeDefenderDecision(HUMAN, decision); haptic(); refresh() }}/>
       {isDiscard && <section className="g-decision-panel g-discard-panel"><div><span>Tallone vinto</span><strong>Hai vinto la prima presa: scarta 2 carte</strong><small>{selected.length}/2 · qualsiasi carta è consentita</small></div><button disabled={selected.length !== 2 || busy} onClick={confirmDiscard}>Scarta</button></section>}
       {message && <div className="g-toast" role="status">{message}</div>}{busy && <button className="g-skip" onClick={() => { presentation.queue.skipAllAnimations(); setAnimationRevision(value => value + 1) }}>Salta animazioni</button>}
