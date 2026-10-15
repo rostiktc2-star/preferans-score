@@ -211,6 +211,22 @@ h1,h2,h3,h4,.brand,.setup-hero h1,.setup-panel h2,.game-header h1,.section-headi
 .g-defender-panel{width:max-content;max-width:calc(100% - 30px)}.g-defender-actions{display:flex;grid-template-columns:none;flex-wrap:wrap}.g-defender-actions button{min-width:120px;min-height:48px;padding:.55rem 1rem;flex:1 1 auto}
 @media(max-width:760px){.g-player-badge strong,.g-human>header strong{font-size:1rem!important}.g-score-players>article>strong{font-size:.76rem!important}.g-speech{top:-16px;min-width:78px;padding:.38rem .55rem}.g-speech strong{font-size:1.5rem}.g-thinking{top:39px;left:42px}.g-opponent.is-right .g-thinking{right:42px;left:auto}.g-round-status{right:8px;bottom:8px}.g-commanding-bid{min-width:108px;padding:.4rem .52rem}.g-commanding-bid strong{font-size:1.35rem}.g-commanding-bid span{max-width:120px;font-size:.56rem}.g-defender-panel{width:max-content;max-width:calc(100% - 12px)}.g-defender-actions button{min-width:96px}}
 
+/* Stato della mano integrato nel pannello punteggi. */
+.g-scoreboard-pinned .g-round-status{position:static;right:auto;bottom:auto;width:100%;margin-top:auto;padding:.72rem .82rem;border-top:1px solid #ffffff18;justify-items:stretch}.g-scoreboard-pinned .g-commanding-bid{width:100%;min-width:0;text-align:left}.g-scoreboard-pinned .g-commanding-bid span{max-width:100%}.g-scoreboard-pinned .g-hand-number{width:100%;justify-content:space-between}
+@media(min-width:900px){.g-scoreboard-pinned{display:flex;flex-direction:column}.g-scoreboard-pinned .g-round-status{display:grid;grid-template-columns:1fr;gap:.45rem}.g-scoreboard-pinned .g-commanding-bid strong{font-size:1.55rem}}
+
+/* Gli ultimi residui blu diventano verde club, crema e oro. */
+.g-opponent.is-declarer .g-player-badge,.g-human.is-declarer>header{border-color:#d8bc74;box-shadow:0 8px 0 -3px #a77936,0 0 28px #d2b36b55;background:#173c31e8}.g-opponent.is-declarer:after,.g-human.is-declarer:after{background:#d2b36b}.g-settings .g-ai-toggle input{accent-color:#c8a65c}.login-page,.bot-setup-page{background:radial-gradient(circle at 40% 15%,#2c5945,#0a211a 58%,#06120f)}.login-page>section,.bot-setup-page>section{background:#0d261fee}.install-notice{background:#15382d}.install-notice>button{background:#092219}.welcome-actions>a:hover{background:#173a30}.mobile-menu-close,.mobile-menu-grid a,.mobile-menu-actions button{background:#102d25}.mobile-menu-grid a.active{background:#1a493b}
+
+/* Mobile: punteggi e stato in alto, avversari sotto, comandi sempre liberi. */
+@media(max-width:760px){
+  .g-scoreboard-pinned{top:7px;width:calc(100% - 12px);max-width:none;display:block!important;overflow:visible}
+  .g-scoreboard-pinned .g-score-players,.g-scoreboard-pinned .g-round-status{grid-column:1/-1;width:100%}.g-scoreboard-pinned .g-score-players>article{flex:1;min-width:0;padding:.3rem .25rem}.g-scoreboard-pinned .g-score-main{display:block}.g-scoreboard-pinned .g-score-main span{display:inline}.g-scoreboard-pinned .g-score-main span+span:before{content:" · "}
+  .g-scoreboard-pinned .g-round-status{display:grid;grid-template-columns:minmax(0,1fr) 66px;gap:.35rem;padding:.35rem}.g-scoreboard-pinned .g-commanding-bid{display:grid;grid-template-columns:auto 1fr;gap:0 .45rem;align-items:center;padding:.32rem .48rem}.g-scoreboard-pinned .g-commanding-bid small{grid-row:1}.g-scoreboard-pinned .g-commanding-bid strong{grid-row:1;font-size:1.12rem}.g-scoreboard-pinned .g-commanding-bid span{grid-column:1/-1;font-size:.52rem}.g-scoreboard-pinned .g-hand-number{min-width:0;padding:.32rem .4rem}
+  .g-opponent{top:18%}.g-center{top:46%}.g-decision-panel{bottom:178px}.g-auction-panel{bottom:174px}
+}
+@media(max-width:390px){.g-scoreboard-pinned .g-score-main span{font-size:.5rem}.g-opponent{top:19%}.g-center{top:47%}.g-scoreboard-pinned .g-commanding-bid strong{font-size:1rem}}
+
 /* Tavolo: gerarchia leggibile, profili e asta progressiva. */
 .g-topbar>div strong{font-size:1.45rem;line-height:1;white-space:nowrap}
 .g-hand-number{position:absolute;right:14px;bottom:14px;z-index:45;display:flex;align-items:center;gap:.45rem;min-width:82px;padding:.48rem .65rem;border:1px solid #d5ba7552;border-radius:12px;background:#08251ee8;box-shadow:0 8px 24px #0019;backdrop-filter:blur(10px)}
