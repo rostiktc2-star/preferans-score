@@ -415,3 +415,37 @@ h1,h2,h3,h4,.brand,.setup-hero h1,.setup-panel h2,.game-header h1,.section-headi
   .g-human{height:105px}.g-human>header{bottom:77px;min-height:38px}.g-human-hand{height:79px;padding-right:55px}.g-human-hand .g-card{width:55px;height:79px;min-height:79px}.g-human-hand>div{width:auto}
   .g-decision-panel{bottom:121px;max-height:min(190px,31dvh);padding:.5rem}.g-auction-start button{min-height:48px}.g-auction-panel{bottom:121px}
 }
+
+/* Ingresso mobile: una sola gerarchia, nessun finto layout desktop. */
+@media(max-width:650px){
+  .club-login{position:relative;display:flex!important;flex-direction:column;height:100dvh;min-height:0;padding:0 0 max(12px,env(safe-area-inset-bottom));overflow:hidden;background:radial-gradient(circle at 50% 10%,#376851 0,#173b2f 34%,#081b16 72%,#06120f 100%)!important}
+  .club-login:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.09;background-image:radial-gradient(#fff 0.55px,transparent .8px);background-size:6px 6px}
+  .club-login:after{content:"";position:absolute;left:50%;top:31%;width:88vw;height:88vw;max-width:430px;max-height:430px;transform:translate(-50%,-50%);border:1px solid #e2c47b22;border-radius:50%;box-shadow:0 0 0 34px #ffffff025,0 0 0 72px #ffffff018;pointer-events:none}
+  .club-login>section{position:relative;z-index:1}
+  .login-story{flex:0 0 auto;min-height:0!important;height:auto;align-items:center;justify-content:flex-start;padding:max(22px,env(safe-area-inset-top)) 20px 16px!important;text-align:center;overflow:visible}
+  .login-story:after{display:none}
+  .club-monogram{width:54px;height:54px;margin:0 0 .72rem;border-color:#e2c47b9a;font-size:1.75rem;box-shadow:0 0 0 7px #ffffff04,0 12px 34px #0017}
+  .login-story .eyebrow{margin:.2rem 0;color:#e0c37f;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase}
+  .login-story h1{margin:.35rem 0 0;font-size:2.7rem!important;line-height:.82!important;text-shadow:0 5px 22px #0018}
+  .login-story h1 br{display:none}.login-story h1 em{margin-left:.18em}
+  .login-story>p:not(.eyebrow){display:none}
+  .login-suits{display:flex!important;gap:.38rem;margin:.85rem 0 0}
+  .login-suits i{width:25px;height:34px;border:1px solid #d9cfbb;border-radius:5px;font-size:.72rem;box-shadow:0 5px 12px #0015}
+
+  .login-card{flex:0 0 auto;width:calc(100% - 20px)!important;margin:auto 10px 0!important;padding:1.25rem 1.05rem 1rem!important;border:1px solid #d5ba754d!important;border-radius:26px!important;background:linear-gradient(160deg,#123229f5,#091d18f5)!important;box-shadow:0 -10px 45px #0017,0 22px 50px #0008!important;backdrop-filter:blur(18px)}
+  .login-card:before{content:"";display:block;width:38px;height:4px;margin:-.45rem auto .8rem;border-radius:99px;background:#d8bd7866}
+  .login-card .step-kicker{display:block;color:#d5b970;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-align:center;text-transform:uppercase}
+  .login-card h2{margin:.42rem 0 .3rem;font-size:2.15rem;line-height:1;text-align:center}
+  .login-card>p{max-width:32ch;margin:.2rem auto;color:#abc0b7!important;font-size:.74rem;line-height:1.4;text-align:center}
+  .login-card label{margin:.95rem 0 .6rem;color:#d9e3df;font-size:.69rem;font-weight:800;letter-spacing:.03em}
+  .login-card input{height:56px;margin-top:.38rem;padding:0 1rem;border:1px solid #d8bd7852;border-radius:14px;background:#061711!important;color:#f7f2e8;font-size:1rem;box-shadow:inset 0 2px 10px #0005}
+  .login-card input::placeholder{color:#71877e}.login-card input:focus{border-color:#e2c67f;box-shadow:0 0 0 3px #d9b96724,inset 0 2px 10px #0005;outline:0}
+  .login-card>button{min-height:56px;margin-top:.7rem;padding:0 1.05rem;border-radius:14px;font-size:.94rem;font-weight:900;touch-action:manipulation}
+  .login-card>button span{font-size:1.25rem}.login-card>button:disabled{opacity:.48;filter:saturate(.55)}
+  .login-card small{margin:.72rem 0 0;color:#80968d!important;font-size:.59rem;line-height:1.35;text-align:center}
+}
+
+@media(max-width:380px),(max-height:700px) and (max-width:650px){
+  .login-story{padding-top:max(12px,env(safe-area-inset-top))!important;padding-bottom:8px!important}.club-monogram{width:46px;height:46px;margin-bottom:.45rem;font-size:1.5rem}.login-story .eyebrow{font-size:.6rem}.login-story h1{font-size:2.28rem!important}.login-suits{margin-top:.55rem}.login-suits i{width:22px;height:29px}
+  .login-card{padding:.92rem .9rem .75rem!important;border-radius:22px!important}.login-card:before{margin:-.28rem auto .55rem}.login-card h2{font-size:1.85rem}.login-card>p{font-size:.67rem}.login-card label{margin:.7rem 0 .45rem}.login-card input,.login-card>button{height:50px;min-height:50px}.login-card small{margin-top:.5rem}
+}
