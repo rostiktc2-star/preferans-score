@@ -345,3 +345,73 @@ h1,h2,h3,h4,.brand,.setup-hero h1,.setup-panel h2,.game-header h1,.section-headi
 .g-turn-glow{position:absolute;z-index:1;inset:9px;border-radius:34px;pointer-events:none;opacity:0;transition:opacity .3s ease;animation:g-turn-edge 1.8s ease-in-out infinite}.g-turn-glow.turn-alex{opacity:1;background:radial-gradient(ellipse 62% 24% at 10% 0,#ffe29b70 0,#d3b36f32 38%,transparent 72%);box-shadow:inset 18px 18px 24px -18px #ffe6a6,inset 0 3px 8px -4px #fff0bd}.g-turn-glow.turn-mikhail{opacity:1;background:radial-gradient(ellipse 62% 24% at 90% 0,#ffe29b70 0,#d3b36f32 38%,transparent 72%);box-shadow:inset -18px 18px 24px -18px #ffe6a6,inset 0 3px 8px -4px #fff0bd}.g-turn-glow.turn-you{opacity:1;background:radial-gradient(ellipse 68% 25% at 50% 100%,#ffe29b70 0,#d3b36f32 40%,transparent 74%);box-shadow:inset 0 -19px 25px -19px #ffe6a6,inset 0 -3px 8px -4px #fff0bd}@keyframes g-turn-edge{0%,100%{filter:brightness(.82)}50%{filter:brightness(1.3)}}
 @media(max-width:760px){.g-turn-glow{inset:6px;border-radius:28px}.g-turn-glow.turn-alex{background:radial-gradient(ellipse 75% 18% at 0 20%,#ffe29b7d 0,#d3b36f30 42%,transparent 74%)}.g-turn-glow.turn-mikhail{background:radial-gradient(ellipse 75% 18% at 100% 20%,#ffe29b7d 0,#d3b36f30 42%,transparent 74%)}.g-turn-glow.turn-you{background:radial-gradient(ellipse 90% 20% at 50% 100%,#ffe29b7d 0,#d3b36f30 42%,transparent 76%)}}
 @media(prefers-reduced-motion:reduce){.g-turn-glow{animation:none}}
+
+/* Mobile game UX: tutto il tavolo resta leggibile e raggiungibile con una mano. */
+@media(max-width:760px){
+  .game-table-page{height:100dvh;min-height:0;overflow:hidden;background:#071512}
+  .g-topbar{height:calc(50px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 10px 0;background:#071a16f2}
+  .g-topbar .g-menu-button,.g-topbar .g-settings-button{width:40px;height:40px;min-height:40px;border-radius:12px;touch-action:manipulation}
+  .g-topbar>div strong{font-size:1.12rem}
+  .g-table{height:calc(100dvh - 50px - env(safe-area-inset-top));min-height:0;border-radius:0;box-shadow:inset 0 0 0 6px #082728,inset 0 0 60px #001415cc}
+  .g-table:before{inset:6px;border-radius:28px}
+
+  .g-scoreboard-pinned{top:6px;width:calc(100% - 12px);border-radius:14px;box-shadow:0 7px 22px #0019}
+  .g-scoreboard-pinned .g-score-players{height:48px}
+  .g-scoreboard-pinned .g-score-players>article{display:flex;flex-direction:column;justify-content:center;padding:.25rem .18rem}
+  .g-scoreboard-pinned .g-score-players>article>strong{margin:0 0 .16rem;font-family:"Montserrat",ui-sans-serif,system-ui,sans-serif!important;font-size:.72rem!important;font-weight:800!important;line-height:1}
+  .g-scoreboard-pinned .g-score-main span{font-size:.48rem;white-space:nowrap}
+  .g-scoreboard-pinned .g-round-status{grid-template-columns:minmax(0,1fr) 62px;min-height:43px;padding:.28rem;gap:.28rem}
+  .g-scoreboard-pinned .g-commanding-bid{min-height:36px;padding:.26rem .44rem;border-radius:10px}
+  .g-scoreboard-pinned .g-commanding-bid small,.g-scoreboard-pinned .g-hand-number small{font-size:.48rem}
+  .g-scoreboard-pinned .g-commanding-bid strong{font-size:1.05rem;line-height:1}
+  .g-scoreboard-pinned .g-commanding-bid span{font-size:.48rem;line-height:1.1}
+  .g-scoreboard-pinned .g-hand-number{min-height:36px;padding:.28rem .4rem;border-radius:10px}
+  .g-game-notices{min-height:30px;padding:.25rem .3rem}.g-game-notices p{min-height:24px;padding:.28rem .42rem}
+
+  .g-opponent,.g-scoreboard-pinned:has(.g-game-notices)~.g-opponent{top:100px;width:48%}
+  .g-scoreboard-pinned:has(.g-game-notices)~.g-opponent{top:132px}
+  .g-opponent.is-left{left:8px}.g-opponent.is-right{right:8px}
+  .g-player-badge{width:100%;max-width:100%;min-height:42px;padding:.28rem .38rem;gap:.38rem}
+  .g-opponent.is-right .g-player-badge{justify-content:flex-start}
+  .g-player-badge strong{font-size:.78rem!important}.g-player-badge small{font-size:.49rem}
+  .g-avatar{width:30px;height:30px}
+  .g-opponent-hand{display:none}
+  .g-role-row{min-height:14px}.g-role-row span{font-size:.46rem}
+  .g-speech{top:40px;left:8px;min-width:84px;padding:.3rem .48rem}.g-opponent.is-right .g-speech{right:8px;left:auto}
+  .g-speech small{font-size:.46rem}.g-speech strong{font-size:1.2rem}
+  .g-thinking{top:43px;left:8px}.g-opponent.is-right .g-thinking{right:8px;left:auto}
+
+  .g-center,.g-scoreboard-pinned:has(.g-game-notices)~.g-center{top:47%;width:96vw;height:255px}
+  .g-scoreboard-pinned:has(.g-game-notices)~.g-center{top:49%}
+  .g-talon{right:5%;top:26%}.g-card.is-compact{width:44px;height:63px;min-height:63px}
+  .g-played-card .g-card{width:64px;height:92px;min-height:92px}
+  .g-played-card.from-alex{left:5%;top:7%}.g-played-card.from-mikhail{right:5%;top:7%}.g-played-card.from-you{bottom:4%}
+
+  .g-human{right:8px;bottom:max(4px,env(safe-area-inset-bottom));left:8px;height:128px}
+  .g-human>header{bottom:98px;width:100%;min-height:43px;padding:.3rem .5rem;background:#08271fe8;box-shadow:0 7px 20px #0018}
+  .g-human>header strong{font-size:.85rem!important}.g-human>header small{font-size:.5rem}
+  .g-human-hand{right:3px;bottom:0;left:3px;display:grid;grid-template-columns:repeat(var(--hand-card-count),minmax(0,1fr));height:99px;overflow:visible;padding:8px 68px 0 0}
+  .g-human-hand>div{position:relative;width:auto;min-width:0;transform:none}
+  .g-human-hand>div:nth-child(1){z-index:1}.g-human-hand>div:nth-child(2){z-index:2}.g-human-hand>div:nth-child(3){z-index:3}.g-human-hand>div:nth-child(4){z-index:4}.g-human-hand>div:nth-child(5){z-index:5}.g-human-hand>div:nth-child(6){z-index:6}.g-human-hand>div:nth-child(7){z-index:7}.g-human-hand>div:nth-child(8){z-index:8}.g-human-hand>div:nth-child(9){z-index:9}.g-human-hand>div:nth-child(10){z-index:10}.g-human-hand>div:nth-child(11){z-index:11}.g-human-hand>div:nth-child(12){z-index:12}
+  .g-human-hand .g-card{width:68px;height:97px;min-height:97px;border-radius:8px;touch-action:manipulation}
+  .g-human-hand .g-card.is-selected{transform:translateY(-13px)!important}
+
+  .g-decision-panel{bottom:148px;width:calc(100% - 16px);max-height:min(218px,32dvh);padding:.62rem;border-radius:16px;overflow:auto;box-shadow:0 14px 38px #001c}
+  .g-decision-panel header{margin-bottom:.48rem}.g-decision-panel header span{font-size:.72rem}.g-decision-panel header strong{font-size:1.12rem}
+  .g-auction-start{gap:.5rem}.g-auction-start button{min-height:54px;border-radius:12px;font-size:1rem;touch-action:manipulation}
+  .g-auction-picker{gap:.4rem}.g-wheel button{min-height:40px;touch-action:manipulation}.g-auction-selected,.g-auction-confirm{min-height:48px}
+  .g-defender-actions{gap:.45rem}.g-defender-actions button{min-width:0;min-height:52px;padding:.45rem;font-size:.86rem;touch-action:manipulation}
+  .g-discard-panel{gap:.55rem}.g-discard-panel>button{min-width:104px;min-height:52px;touch-action:manipulation}
+  .g-settings{top:calc(55px + env(safe-area-inset-top));right:8px;width:calc(100% - 16px);max-width:330px;padding:1rem;border-radius:18px}.g-settings button,.g-settings select{min-height:44px}
+  .g-skip{display:none}
+  .g-turn-glow{inset:5px;border-radius:25px}
+}
+
+@media(max-width:380px),(max-height:700px) and (max-width:760px){
+  .g-scoreboard-pinned .g-score-players{height:43px}.g-scoreboard-pinned .g-round-status{min-height:39px}.g-scoreboard-pinned .g-commanding-bid,.g-scoreboard-pinned .g-hand-number{min-height:32px}
+  .g-opponent,.g-scoreboard-pinned:has(.g-game-notices)~.g-opponent{top:90px}.g-scoreboard-pinned:has(.g-game-notices)~.g-opponent{top:120px}
+  .g-player-badge{min-height:38px}.g-avatar{width:27px;height:27px}
+  .g-center{top:45%;height:220px}.g-scoreboard-pinned:has(.g-game-notices)~.g-center{top:47%}
+  .g-human{height:105px}.g-human>header{bottom:77px;min-height:38px}.g-human-hand{height:79px;padding-right:55px}.g-human-hand .g-card{width:55px;height:79px;min-height:79px}.g-human-hand>div{width:auto}
+  .g-decision-panel{bottom:121px;max-height:min(190px,31dvh);padding:.5rem}.g-auction-start button{min-height:48px}.g-auction-panel{bottom:121px}
+}
